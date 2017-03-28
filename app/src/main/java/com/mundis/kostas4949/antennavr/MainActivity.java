@@ -1,13 +1,21 @@
 package com.mundis.kostas4949.antennavr;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.hardware.Camera;
+import android.hardware.SensorManager;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.SurfaceView;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,15 +33,31 @@ public class MainActivity extends AppCompatActivity{
     boolean gps_enabled = false;
     boolean network_enabled = false;
     LocationManager locationManager;
+    private SensorManager sensorManager;
+    private SurfaceView surfaceView;
+    private FrameLayout cameraContainerLayout;
+    private ARCamera arCamera;
     TextView coords;
+    private Camera camera;
+    private final static int REQUEST_CAMERA_PERMISSIONS_CODE = 11;
     Intent in;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        coords = (TextView) findViewById(R.id.coord);
+        setContentView(R.layout.activity_ar);
+        sensorManager = (SensorManager) this.getSystemService(SENSOR_SERVICE);
+        cameraContainerLayout = (FrameLayout) findViewById(R.id.camera_container_layout);
+        surfaceView = (SurfaceView) findViewById(R.id.surface_view);
+        coords = (TextView) findViewById(R.id.tv_current_location);
+       // coords = (TextView) findViewById(R.id.coord);
         coords.setText("Calculating position....");
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+
+
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
         gps_enabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         network_enabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
         if (!gps_enabled && !network_enabled) {
@@ -56,12 +80,49 @@ public class MainActivity extends AppCompatActivity{
                 coords.setText("Can't get network location(security exception). Check your settings!");
             }
         }
-        /*in = new Intent(this, MapsActivity.class);
-        Bundle extras = new Bundle();
-        extras.putDouble("x",x);
-        extras.putDouble("y",y);
-        in.putExtras(extras);
-        startActivity(in);*/
+        requestCameraPermission();
+    }
+    public void requestCameraPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+                this.checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            this.requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSIONS_CODE);
+        } else {
+            initARCameraView();
+        }
+    }
+
+    public void initARCameraView() {
+        reloadSurfaceView();
+
+        if (arCamera == null) {
+            arCamera = new ARCamera(this, surfaceView);
+        }
+        if (arCamera.getParent() != null) {
+            ((ViewGroup) arCamera.getParent()).removeView(arCamera);
+        }
+        cameraContainerLayout.addView(arCamera);
+        arCamera.setKeepScreenOn(true);
+        initCamera();
+    }
+
+    private void reloadSurfaceView() {
+        if (surfaceView.getParent() != null) {
+            ((ViewGroup) surfaceView.getParent()).removeView(surfaceView);
+        }
+
+        cameraContainerLayout.addView(surfaceView);
+    }
+    private void initCamera() {
+        int numCams = Camera.getNumberOfCameras();
+        if(numCams > 0){
+            try{
+                camera = Camera.open();
+                camera.startPreview();
+                arCamera.setCamera(camera);
+            } catch (RuntimeException ex){
+                Toast.makeText(this, "Camera not found", Toast.LENGTH_LONG).show();
+            }
+        }
     }
     LocationListener locationListenerGps = new LocationListener() {
         public void onLocationChanged(Location location) {
@@ -71,9 +132,7 @@ public class MainActivity extends AppCompatActivity{
                 y = location.getLongitude();
                 gps_data=1;
                 coords.setText("location (gps) : " + x + " " + y);
-                /*extras.putDouble("x",x);
-                extras.putDouble("y",y);
-                in.putExtras(extras);*/
+
             }
             else {
                 gps_data=0;
@@ -81,10 +140,6 @@ public class MainActivity extends AppCompatActivity{
         }
         public void onProviderDisabled(String provider) {
             System.out.println("We know "+provider+" is disabled in gps listener!");
-            //System.out.println("Provider= "+provider);
-            //System.out.println("Provider equals GPS? "+provider.equals("GPS_PROVIDER"));
-             //   System.out.println("isgpsproviderenabled:"+locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER));
-            //System.out.println("isnetworkproviderenabled:"+locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER));
             if (!locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
                 System.out.println("Option 1");
                 gps_data=0;
@@ -131,10 +186,6 @@ public class MainActivity extends AppCompatActivity{
         }
         public void onProviderDisabled(String provider) {
             System.out.println("We know "+provider+" is disabled in network listener!");
-            //System.out.println("Provider= "+provider);
-            //System.out.println("Provider equals GPS? "+provider.equals("GPS_PROVIDER"));
-            //   System.out.println("isgpsproviderenabled:"+locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER));
-            //System.out.println("isnetworkproviderenabled:"+locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER));
             if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
                 gps_data=0;
                 System.out.println("Option 1/network");
@@ -159,143 +210,5 @@ public class MainActivity extends AppCompatActivity{
         public void onStatusChanged(String provider, int status, Bundle extras) {
         }
     };
-   /* class GetLastLocation extends TimerTask {
-        @Override
-        public void run() {
-            locationManager.removeUpdates(locationListenerGps);
-            locationManager.removeUpdates(locationListenerNetwork);
-            Location net_loc = null, gps_loc = null;
-            if (gps_enabled) {
-                try {
-                    gps_loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                } catch (SecurityException e) {
-                    coords.setText("Can't get gps location(security exception). Check your settings!");
-                }
-            }
-            if (network_enabled) {
-                try {
-                    net_loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                } catch (SecurityException e) {
-                    coords.setText("Can't get network location(security exception). Check your settings!");
-                }
-            }
-            if(gps_loc!=null && net_loc!=null) {
-                if (gps_loc.getTime() > net_loc.getTime()) {
-                    x = gps_loc.getLatitude();
-                    y = gps_loc.getLongitude();
-                    coords.setText("location (gps) : " + x + " " + y);
-                }
-                else
-                {x = net_loc.getLatitude();
-                    y = net_loc.getLongitude();
-                    coords.setText("location (network) : " + x + " " + y);
 
-                }
-            }
-            if(gps_loc!=null){
-                {x = gps_loc.getLatitude();
-                    y = gps_loc.getLongitude();
-                    coords.setText("location (gps2) : " + x + " " + y);
-                }
-
-            }
-            if(net_loc!=null){
-                {x = net_loc.getLatitude();
-                    y = net_loc.getLongitude();
-                    coords.setText("location (network2) : " + x + " " + y);
-
-                }
-            }
-            coords.setText("No last known location.");
-        }
-    }
-        /*criteria = new Criteria();
-        criteria.setAccuracy(Criteria.ACCURACY_COARSE);
-
-        provider = locationManager.getBestProvider(criteria, true);
-        if (provider!= null) {
-            System.out.println("Using provider: "+provider);
-            System.out.println("WTF1");
-            try {
-                locationManager.requestLocationUpdates(provider, 400, 1, this);
-                onLocationChanged(location);
-            } catch (SecurityException e) {
-                coords.setText("Can't get location(security exception). Check your settings!");
-            }
-        }
-        else {
-            System.out.println("WTF2");
-            coords.setText("Can't get provider. Check your settings!");
-        }*/
-
-    /*
-    @Override
-    public void onProviderEnabled(String eProvider){
-        Toast.makeText(getApplicationContext(),"Provider "+eProvider+" enabled, checking...",4000).show();
-        provider = locationManager.getBestProvider(criteria, true);
-        if (provider!= null) {
-            System.out.println("Using provider: "+provider);
-            try {
-                locationManager.requestLocationUpdates(provider, 400, 1, this);
-                onLocationChanged(location);
-            } catch (SecurityException e) {
-                coords.setText("Can't get location. Check your settings!");
-            }
-        }
-        else {
-            coords.setText("Can't get provider. Check your settings!");
-        }
-    }
-    @Override
-    public void onLocationChanged(Location location) {
-        if (location != null) {
-            double lat = location.getLatitude();
-            double lng = location.getLongitude();
-            coords.setText("New Location: " + String.valueOf(lat) + " " + String.valueOf(lng));
-        }
-        else
-            coords.setText("Can't get location(weird). Check your settings!");
-    }
-
-    @Override
-    public void onProviderDisabled(String dProvider) {
-           Toast.makeText(getApplicationContext(),"Provider "+dProvider+" disabled, switching...",4000).show();
-        provider = locationManager.getBestProvider(criteria, true);
-        if (provider!= null) {
-            System.out.println("Using provider: "+provider);
-            try {
-                locationManager.requestLocationUpdates(provider, 400, 1, this);
-                onLocationChanged(location);
-            } catch (SecurityException e) {
-                coords.setText("Can't get location. Check your settings!");
-            }
-        }
-        else {
-            coords.setText("Can't get provider. Check your settings!");
-        }
-    }
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-        Toast.makeText(getApplicationContext(),"Provider "+provider+" status changed to: "+Integer.toString(status),4000).show();
-    }
-    @Override
-    protected void onResume() {
-        super.onResume();
-        System.out.println("WTF3");
-        if (provider!= null) {
-            try {
-                locationManager.requestLocationUpdates(provider, 400, 1, this);
-            } catch (SecurityException e) {
-                coords.setText("Can't get location. Check your settings!");
-            }
-        }
-        else {
-            coords.setText("Can't get provider. Check your settings!");
-        }
-    }
-
-    protected void onPause() {
-        super.onPause();
-        locationManager.removeUpdates(this);
-    }*/
 }
