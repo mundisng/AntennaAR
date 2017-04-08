@@ -52,34 +52,35 @@ public class MainActivity extends AppCompatActivity{
        // coords = (TextView) findViewById(R.id.coord);
         coords.setText("Calculating position....");
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-
-
-    }
-    @Override
-    public void onResume() {
-        super.onResume();
         gps_enabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         network_enabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
         if (!gps_enabled && !network_enabled) {
             coords.setText("Can't get location.Both gps and network is disabled!");
         }
 
-        if (gps_enabled) {
-            try {
+        //if (gps_enabled) {
+            try { System.out.println("Start: if (gps_enabled) is true");
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0,
                         locationListenerGps);
             } catch (SecurityException e) {
                 coords.setText("Can't get gps location(security exception). Check your settings!");
             }
-        }
-        if (network_enabled) {
-            try {
+       // }
+        //if (network_enabled) {
+            try { System.out.println("Start: if (network_enabled) is true");
                 locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0,
                         locationListenerNetwork);
             } catch (SecurityException e) {
                 coords.setText("Can't get network location(security exception). Check your settings!");
             }
-        }
+        //}
+
+
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+
         requestCameraPermission();
     }
     public void requestCameraPermission() {
@@ -132,6 +133,7 @@ public class MainActivity extends AppCompatActivity{
                 y = location.getLongitude();
                 gps_data=1;
                 coords.setText("location (gps) : " + x + " " + y);
+                System.out.println("(GPS)x is: "+x+"y is: "+y);
 
             }
             else {
@@ -149,12 +151,12 @@ public class MainActivity extends AppCompatActivity{
                 gps_data=0;
                 System.out.println("Option 2");
                 coords.setText("Calculating position...");
-                try {
+                /*try {
                     locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0,
                             locationListenerNetwork);
                 } catch (SecurityException e) {
                     coords.setText("Can't get network location(security exception). Check your settings!");
-                }
+                }*/
             }
 
 
@@ -170,10 +172,11 @@ public class MainActivity extends AppCompatActivity{
 
     LocationListener locationListenerNetwork = new LocationListener() {
         public void onLocationChanged(Location location) {
-            System.out.println("Calculating network position...");
+            System.out.println("Calculating network position for: "+location+"...");
             if (location != null && gps_data == 0) {
                 x = location.getLatitude();
                 y = location.getLongitude();
+                System.out.println("(Network)x is: "+x+"y is: "+y);
                 coords.setText("location (network) : " + x + " " + y);
                 /*extras.putDouble("x",x);
                 extras.putDouble("y",y);
@@ -194,12 +197,12 @@ public class MainActivity extends AppCompatActivity{
             else{
                 System.out.println("Option 2/network");
                 coords.setText("Calculating position...");
-                try {
+                /*try {
                     locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0,
                             locationListenerNetwork);
                 } catch (SecurityException e) {
                     coords.setText("Can't get network location(security exception). Check your settings!");
-                }
+                }*/
             }
         }
 
