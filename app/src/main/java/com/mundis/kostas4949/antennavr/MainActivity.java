@@ -28,7 +28,7 @@ import java.util.TimerTask;
  */
 
 public class MainActivity extends AppCompatActivity{
-    double x,y;
+    double x,y,z;
     int gps_data=0;
     boolean gps_enabled = false;
     boolean network_enabled = false;
@@ -131,8 +131,9 @@ public class MainActivity extends AppCompatActivity{
             if (location!=null) {
                 x = location.getLatitude();
                 y = location.getLongitude();
+                z=location.getAltitude();
                 gps_data=1;
-                coords.setText("location (gps) : " + x + " " + y);
+                coords.setText("location (gps) : " + x + " " + y+"and altitude: "+z);
                 System.out.println("(GPS)x is: "+x+"y is: "+y);
 
             }
