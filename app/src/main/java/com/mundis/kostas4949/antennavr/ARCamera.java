@@ -207,7 +207,7 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
         if(camera != null) {
             this.cameraWidth = width;
             this.cameraHeight = height;
-
+             //System.out.println("Width: "+this.cameraWidth+" Height: "+this.cameraHeight);
             Camera.Parameters params = camera.getParameters();
             List<Camera.Size> previewSizes = parameters.getSupportedPreviewSizes();
             Camera.Size previewSize = previewSizes.get(0);
@@ -232,6 +232,7 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
     }
 
     public float[] getProjectionMatrix() {
+
         return projectionMatrix;
     }
 

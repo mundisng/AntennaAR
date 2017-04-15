@@ -10,7 +10,7 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 public class WelcomeActivity extends AppCompatActivity {
-    private static int TIME_OUT = 14000;
+    private static int TIME_OUT = 4000;
     private static Toolbar myToolbar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
