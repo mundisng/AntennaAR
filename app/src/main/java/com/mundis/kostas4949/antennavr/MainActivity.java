@@ -137,7 +137,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onPause() {
         super.onPause();
-        //releaseCamera();
+        //releaseCamera(); prepei na kanei release thn kamera otan einai se pause, to sygkekrimeno einai akoma buggy
         mSensorManager.unregisterListener(this);
     }
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
