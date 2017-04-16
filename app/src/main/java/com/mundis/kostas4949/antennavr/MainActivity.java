@@ -150,11 +150,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             float[] projectionMatrix = new float[16];
             float[] rotatedProjectionMatrix = new float[16];
             SensorManager.getRotationMatrixFromVector(rotationMatrixFromVector, sEvent.values); //Get rotation of cell phone
-            System.out.println("CELL ROTATION: \n");
+            //System.out.println("CELL ROTATION: \n");
             String bla="";
             for (int i = 0; i < rotationMatrixFromVector.length; i++) {
-                //bla=bla+rotationMatrixFromVector[i]+ " ";
-                    System.out.print(+rotationMatrixFromVector[i]+ " ");
+                bla=bla+rotationMatrixFromVector[i]+ " ";
+                    //System.out.print(+rotationMatrixFromVector[i]+ " ");
             }
             compa.setText(bla);
             if (arCamera != null) {
