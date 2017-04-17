@@ -36,7 +36,7 @@ import java.util.TimerTask;
  */
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener{
-    private static Toolbar myToolbar;
+    private /*static*/ Toolbar myToolbar;
     double x,y,z;
     int gps_data=0;
     boolean gps_enabled = false;
@@ -57,8 +57,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //arOverlayView = new AROverlayView(this); tha xreiastei sto mellon gia tis koukides sthn kamera
-        myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
-        setSupportActionBar(myToolbar);
         mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
         List<Sensor> sensors = mSensorManager.getSensorList(Sensor.TYPE_ALL);
         int i=1;
@@ -67,10 +65,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             i++;
         }
         mCompass=mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+        if (mCompass==null){
+            System.out.println("NULL SENSOR");
+        }
         cameraContainerLayout = (FrameLayout) findViewById(R.id.camera_container_layout);
         surfaceView = (SurfaceView) findViewById(R.id.surface_view);
+        //surfaceView.setZOrderOnTop(false);
         coords = (TextView) findViewById(R.id.tv_current_location);
         compa= (TextView) findViewById(R.id.textView2);
+        myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        setSupportActionBar(myToolbar);
        // coords = (TextView) findViewById(R.id.coord);
         coords.setText("Calculating position....");
         compa.setText("Calculating phone rotation..");
