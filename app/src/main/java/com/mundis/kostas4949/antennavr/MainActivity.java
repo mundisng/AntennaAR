@@ -108,7 +108,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
+
         getMenuInflater().inflate(R.menu.my_menu, menu);
+        System.out.println("WAJDHKJASHNFJASFJKASLFKHALSJKF");
         return true;
     }
 
