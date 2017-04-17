@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static android.hardware.SensorManager.SENSOR_DELAY_NORMAL;
+
 
 /**
  * Created by kostas4949 on 18/3/2017.
@@ -39,14 +41,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private static Toolbar myToolbar;
     double x,y,z;
     int gps_data=0;
+
+    int one=0,two=0;
+    private final float[] mAccelerometerReading = new float[3];
+    private final float[] mMagnetometerReading = new float[3];
+    private final float[] mRotationMatrix = new float[16];
+    private final float[] mOrientationAngles = new float[3];
+
     boolean gps_enabled = false;
     boolean network_enabled = false;
     LocationManager locationManager;
     private SensorManager mSensorManager;
-    private Sensor mCompass;
+    private Sensor mCompass1,mCompass2,mCompass;
     private SurfaceView surfaceView;
     private FrameLayout cameraContainerLayout;
     private ARCamera arCamera;
+    private boolean ble;
     TextView coords,compa;
     private Camera camera;
     //private AROverlayView arOverlayView; tha xreiastei sto mellon gia tis koukides sthn kamera
@@ -66,7 +76,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             System.out.println(i+" "+sensor.getName());
             i++;
         }
-        mCompass=mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+        mCompass1=mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mCompass2=mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+       // mCompass=mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+        //if (mCompass==null){
+       //     System.out.println("NULL SENSOR0");
+       // }
+        if (mCompass1==null){
+            System.out.println("NULL SENSOR1");
+        }
+        if (mCompass2==null){
+            System.out.println("NULL SENSOR2");
+        }
+      //  //System.out.println("NAME:"+mCompass.getName()+"Delay:"+mCompass.getMinDelay());
         cameraContainerLayout = (FrameLayout) findViewById(R.id.camera_container_layout);
         surfaceView = (SurfaceView) findViewById(R.id.surface_view);
         coords = (TextView) findViewById(R.id.tv_current_location);
@@ -130,7 +152,32 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onResume();
 
         requestCameraPermission();
-        mSensorManager.registerListener(this,mCompass,SensorManager.SENSOR_DELAY_FASTEST);
+       /* ble=mSensorManager.registerListener(this,mCompass,SensorManager.SENSOR_DELAY_FASTEST);
+
+        if (ble==true){
+            System.out.println("Why is is true?");
+        }
+        else {
+            System.out.println("ha ha,false!");
+       }*/
+        ble=mSensorManager.registerListener(this, mCompass1,
+                SensorManager.SENSOR_DELAY_NORMAL);
+        if (ble==true){
+            System.out.println("Why is is true?1");
+        }
+        else {
+            System.out.println("ha ha,false!1");
+        }
+        ble=mSensorManager.registerListener(this, mCompass2,
+                SensorManager.SENSOR_DELAY_NORMAL);
+        if (ble==true){
+            System.out.println("Why is is true?2");
+        }
+        else {
+            System.out.println("ha ha,false!2");
+        }
+
+
         //initAROverlayView(); tha xreiastei sto mellon gia tis koukides sthn kamera
     }
 
@@ -144,24 +191,53 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public void onSensorChanged(SensorEvent sEvent) {
+        //System.out.println("Mou ta eprhkses");
+        if (sEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER){
+            System.arraycopy(sEvent.values, 0, mAccelerometerReading,
+                    0, mAccelerometerReading.length);
+            one=1;
+
+        }
+        else if(sEvent.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD){
+            System.arraycopy(sEvent.values, 0, mMagnetometerReading,
+                    0, mMagnetometerReading.length);
+            two=1;
+
+        }
+        if (one==1 && two==1){
+            mSensorManager.getRotationMatrix(mRotationMatrix, null,
+                    mAccelerometerReading, mMagnetometerReading);
+            mSensorManager.getOrientation(mRotationMatrix, mOrientationAngles);
+            String bla="";
+            for (int i = 0; i < sEvent.values.length; i++) {
+                bla=bla+sEvent.values[i]+ " ";
+                //System.out.print(+rotationMatrixFromVector[i]+ " ");
+            }
+            compa.setText(bla);
+
+        }
         //System.out.println("PEW PEW");
-        if (sEvent.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
+       /*if (sEvent.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
             float[] rotationMatrixFromVector = new float[16];
             float[] projectionMatrix = new float[16];
             float[] rotatedProjectionMatrix = new float[16];
+           String bla="";
+           for (int i = 0; i < sEvent.values.length; i++) {
+               bla=bla+sEvent.values[i]+ " ";
+               //System.out.print(+rotationMatrixFromVector[i]+ " ");
+           }
+           compa.setText(bla);
             SensorManager.getRotationMatrixFromVector(rotationMatrixFromVector, sEvent.values); //Get rotation of cell phone
             //System.out.println("CELL ROTATION: \n");
-            String bla="";
-            for (int i = 0; i < rotationMatrixFromVector.length; i++) {
-                bla=bla+rotationMatrixFromVector[i]+ " ";
-                    //System.out.print(+rotationMatrixFromVector[i]+ " ");
-            }
-            compa.setText(bla);
+
+
             if (arCamera != null) {
                 projectionMatrix = arCamera.getProjectionMatrix();   //Get dimensions of camera
             }
             Matrix.multiplyMM(rotatedProjectionMatrix, 0, projectionMatrix, 0, rotationMatrixFromVector, 0); //Combine rotation with dimensions of camera
-        }
+
+
+        }*/
     }
 
 
@@ -235,7 +311,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 z=location.getAltitude();
                 gps_data=1;
                 coords.setText("location (gps) : " + x + " " + y+"and altitude: "+z);
-                System.out.println("(GPS)x is: "+x+"y is: "+y);
+                //System.out.println("(GPS)x is: "+x+"y is: "+y);
 
             }
             else {
@@ -274,11 +350,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     LocationListener locationListenerNetwork = new LocationListener() {
         public void onLocationChanged(Location location) {
-            System.out.println("Calculating network position for: "+location+"...");
+            System.out.println("Calculating network position ...");
             if (location != null && gps_data == 0) {
                 x = location.getLatitude();
                 y = location.getLongitude();
-                System.out.println("(Network)x is: "+x+"y is: "+y);
+                //System.out.println("(Network)x is: "+x+"y is: "+y);
                 coords.setText("location (network) : " + x + " " + y);
                 /*extras.putDouble("x",x);
                 extras.putDouble("y",y);
