@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_ar);
+        setContentView(R.layout.activity_main);
         //arOverlayView = new AROverlayView(this); tha xreiastei sto mellon gia tis koukides sthn kamera
         myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
