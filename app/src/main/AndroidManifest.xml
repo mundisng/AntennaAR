@@ -28,7 +28,13 @@
         </activity>
         <activity
             android:name=".SettingsActivity"
-            android:label="@string/action_settings">
+            android:label="@string/action_settings"
+            android:parentActivityName="com.mundis.kostas4949.antennavr.MainActivity" >
+
+            <!-- Parent activity meta-data to support 4.0 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.mundis.kostas4949.antennavr.MainActivity" />
         </activity>
 
     </application>
