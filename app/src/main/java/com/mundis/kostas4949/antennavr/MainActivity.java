@@ -110,7 +110,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         // Inflate the menu; this adds items to the action bar if it is present.
 
         getMenuInflater().inflate(R.menu.my_menu, menu);
-        System.out.println("WAJDHKJASHNFJASFJKASLFKHALSJKF");
         return true;
     }
 
@@ -121,9 +120,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 // User chose the "Settings" item, show the app settings UI...
                 //Toast.makeText(MainActivity.this, "Settings Pressed MAIN", Toast.LENGTH_SHORT).show();
                 Intent i = new Intent(MainActivity.this, SettingsActivity.class);
-                i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                //i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(i);
-                finish();
+                //finish();
                 return true;
 
 

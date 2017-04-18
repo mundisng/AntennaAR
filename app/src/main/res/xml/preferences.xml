@@ -1,10 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <CheckBoxPreference
-        android:key="pref_night"
-        android:title="@string/pref_night"
-        android:summary="@string/pref_night_summ"
-        android:defaultValue="false" />
     <EditTextPreference
         android:key="pref_antenum"
         android:title="@string/pref_antenum"
