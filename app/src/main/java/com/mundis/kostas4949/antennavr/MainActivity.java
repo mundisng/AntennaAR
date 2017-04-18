@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity{
         surfaceView = (SurfaceView) findViewById(R.id.surface_view);
         //surfaceView.setZOrderOnTop(false);
         coords = (TextView) findViewById(R.id.tv_current_location);
-        //compa= (TextView) findViewById(R.id.textView2);
+        compa= (TextView) findViewById(R.id.textView2);
         my_toolbar = (Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(my_toolbar);
        // coords = (TextView) findViewById(R.id.coord);
@@ -146,7 +146,7 @@ public class MainActivity extends AppCompatActivity{
     @Override
     public void onPause() {
         super.onPause();
-        //releaseCamera(); prepei na kanei release thn kamera otan einai se pause, to sygkekrimeno einai akoma buggy
+        releaseCamera(); //prepei na kanei release thn kamera otan einai se pause, to sygkekrimeno einai akoma buggy
         //mSensorManager.unregisterListener(this);
     }
     //public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -281,6 +281,7 @@ public class MainActivity extends AppCompatActivity{
         }
 
         public void onStatusChanged(String provider, int status, Bundle extras) {
+
         }
     };
 
