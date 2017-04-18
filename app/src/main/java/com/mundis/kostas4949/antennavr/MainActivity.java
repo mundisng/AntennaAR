@@ -36,7 +36,7 @@ import java.util.TimerTask;
  */
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener{
-    private /*static*/ Toolbar myToolbar;
+    private Toolbar my_toolbar;
     double x,y,z;
     int gps_data=0;
     boolean gps_enabled = false;
@@ -73,8 +73,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //surfaceView.setZOrderOnTop(false);
         coords = (TextView) findViewById(R.id.tv_current_location);
         compa= (TextView) findViewById(R.id.textView2);
-        myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
-        setSupportActionBar(myToolbar);
+        my_toolbar = (Toolbar) findViewById(R.id.app_bar);
+        setSupportActionBar(my_toolbar);
        // coords = (TextView) findViewById(R.id.coord);
         coords.setText("Calculating position....");
         compa.setText("Calculating phone rotation..");

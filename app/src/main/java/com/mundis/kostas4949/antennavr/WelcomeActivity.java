@@ -11,13 +11,13 @@ import android.widget.Toast;
 
 public class WelcomeActivity extends AppCompatActivity {
     private static int TIME_OUT = 4000;
-    private static Toolbar myToolbar;
+    private static Toolbar my_toolbar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
-        //myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
-        //setSupportActionBar(myToolbar);
+        my_toolbar = (Toolbar) findViewById(R.id.app_bar);
+        setSupportActionBar(my_toolbar);
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
