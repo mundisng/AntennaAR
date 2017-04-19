@@ -48,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private final float[] mRotationMatrix = new float[16];
     private final float[] mOrientationAngles = new float[3];
 
+    boolean rotation_compatibility=false;
     boolean gps_enabled = false;
     boolean network_enabled = false;
     LocationManager locationManager;
@@ -76,18 +77,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             System.out.println(i+" "+sensor.getName());
             i++;
         }
-        mCompass1=mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        mCompass2=mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-       // mCompass=mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
-        //if (mCompass==null){
-       //     System.out.println("NULL SENSOR0");
-       // }
-        if (mCompass1==null){
+        mCompass=mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+        if (mCompass==null || mCompass.getMinDelay()==0){
+            System.out.println("Going into compatibility mode");
+            rotation_compatibility=true;
+            mCompass1=mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+            mCompass2=mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        }
+       else {
+            System.out.println("Min delay:"+mCompass.getMinDelay());
+        }
+
+        /*if (mCompass1==null){
             System.out.println("NULL SENSOR1");
         }
         if (mCompass2==null){
             System.out.println("NULL SENSOR2");
-        }
+        }*/
       //  //System.out.println("NAME:"+mCompass.getName()+"Delay:"+mCompass.getMinDelay());
         cameraContainerLayout = (FrameLayout) findViewById(R.id.camera_container_layout);
         surfaceView = (SurfaceView) findViewById(R.id.surface_view);
@@ -152,14 +158,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onResume();
 
         requestCameraPermission();
-       /* ble=mSensorManager.registerListener(this,mCompass,SensorManager.SENSOR_DELAY_FASTEST);
+        if (!rotation_compatibility) {
+            ble = mSensorManager.registerListener(this, mCompass, SensorManager.SENSOR_DELAY_FASTEST);
 
-        if (ble==true){
-            System.out.println("Why is is true?");
+            if (ble == true) {
+                System.out.println("Why is is true?");
+            } else {
+                System.out.println("ha ha,false!");
+            }
         }
         else {
-            System.out.println("ha ha,false!");
-       }*/
         ble=mSensorManager.registerListener(this, mCompass1,
                 SensorManager.SENSOR_DELAY_NORMAL);
         if (ble==true){
@@ -177,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             System.out.println("ha ha,false!2");
         }
 
-
+        }
         //initAROverlayView(); tha xreiastei sto mellon gia tis koukides sthn kamera
     }
 
@@ -192,52 +200,54 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public void onSensorChanged(SensorEvent sEvent) {
         //System.out.println("Mou ta eprhkses");
-        if (sEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER){
-            System.arraycopy(sEvent.values, 0, mAccelerometerReading,
-                    0, mAccelerometerReading.length);
-            one=1;
+        if (rotation_compatibility) {
+            //System.out.println("Yes compatibility!");
+            if (sEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+                System.arraycopy(sEvent.values, 0, mAccelerometerReading,
+                        0, mAccelerometerReading.length);
 
-        }
-        else if(sEvent.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD){
-            System.arraycopy(sEvent.values, 0, mMagnetometerReading,
-                    0, mMagnetometerReading.length);
-            two=1;
 
-        }
-        if (one==1 && two==1){
-            mSensorManager.getRotationMatrix(mRotationMatrix, null,
-                    mAccelerometerReading, mMagnetometerReading);
-            mSensorManager.getOrientation(mRotationMatrix, mOrientationAngles);
-            String bla="";
-            for (int i = 0; i < sEvent.values.length; i++) {
-                bla=bla+sEvent.values[i]+ " ";
-                //System.out.print(+rotationMatrixFromVector[i]+ " ");
+            } else if (sEvent.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
+                System.arraycopy(sEvent.values, 0, mMagnetometerReading,
+                        0, mMagnetometerReading.length);
+
+
             }
-            compa.setText(bla);
+            if (mSensorManager.getRotationMatrix(mRotationMatrix, null,
+                    mAccelerometerReading, mMagnetometerReading)) {
+                String bla = "";
+                for (int i = 0; i < mRotationMatrix.length; i++) {
+                    bla = bla + mRotationMatrix[i] + " ";
 
+                }
+                compa.setText(bla);
+                //mSensorManager.getOrientation(mRotationMatrix, mOrientationAngles);
+
+
+            }
         }
         //System.out.println("PEW PEW");
-       /*if (sEvent.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
-            float[] rotationMatrixFromVector = new float[16];
-            float[] projectionMatrix = new float[16];
-            float[] rotatedProjectionMatrix = new float[16];
-           String bla="";
-           for (int i = 0; i < sEvent.values.length; i++) {
-               bla=bla+sEvent.values[i]+ " ";
+        else {
+       if (sEvent.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
+           float[] rotationMatrixFromVector = new float[16];
+           float[] projectionMatrix = new float[16];
+           float[] rotatedProjectionMatrix = new float[16];
+           SensorManager.getRotationMatrixFromVector(rotationMatrixFromVector, sEvent.values); //Get rotation of cell phone
+           //System.out.println("CELL ROTATION: \n");
+            //System.out.println("Not compatiblity!");
+           String bla = "";
+           for (int i = 0; i < rotationMatrixFromVector.length; i++) {
+               bla = bla + rotationMatrixFromVector[i] + " ";
                //System.out.print(+rotationMatrixFromVector[i]+ " ");
            }
            compa.setText(bla);
-            SensorManager.getRotationMatrixFromVector(rotationMatrixFromVector, sEvent.values); //Get rotation of cell phone
-            //System.out.println("CELL ROTATION: \n");
+           if (arCamera != null) {
+               projectionMatrix = arCamera.getProjectionMatrix();   //Get dimensions of camera
+           }
+           Matrix.multiplyMM(rotatedProjectionMatrix, 0, projectionMatrix, 0, rotationMatrixFromVector, 0); //Combine rotation with dimensions of camera
 
-
-            if (arCamera != null) {
-                projectionMatrix = arCamera.getProjectionMatrix();   //Get dimensions of camera
-            }
-            Matrix.multiplyMM(rotatedProjectionMatrix, 0, projectionMatrix, 0, rotationMatrixFromVector, 0); //Combine rotation with dimensions of camera
-
-
-        }*/
+       }
+        }
     }
 
 
