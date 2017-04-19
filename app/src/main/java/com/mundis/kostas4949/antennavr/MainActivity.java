@@ -98,13 +98,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         compa.setText("Calculating phone rotation..");
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         gps_enabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        network_enabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-        if (!gps_enabled && !network_enabled) {
-            coords.setText("Can't get location.Both gps and network is disabled!");
+        //network_enabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        if (!gps_enabled ) {
+            coords.setText("Can't get location.Gps is disabled!");
         }
 
         //if (gps_enabled) {
-            try { System.out.println("Start: if (gps_enabled) is true");
+            try { //System.out.println("Start: if (gps_enabled) is true");
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0,
                         locationListenerGps);
             } catch (SecurityException e) {
@@ -112,12 +112,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
        // }
         //if (network_enabled) {
-            try { System.out.println("Start: if (network_enabled) is true");
-                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0,
-                        locationListenerNetwork);
-            } catch (SecurityException e) {
-                coords.setText("Can't get network location(security exception). Check your settings!");
-            }
+           // try { System.out.println("Start: if (network_enabled) is true");
+           //     locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0,
+          //              locationListenerNetwork);
+          //  } catch (SecurityException e) {
+              //  coords.setText("Can't get network location(security exception). Check your settings!");
+           // }
         //}
 
 
@@ -184,7 +184,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onPause() {
         super.onPause();
-        //releaseCamera(); prepei na kanei release thn kamera otan einai se pause, to sygkekrimeno einai akoma buggy
+        releaseCamera(); //prepei na kanei release thn kamera otan einai se pause, to sygkekrimeno einai akoma buggy
         mSensorManager.unregisterListener(this);
     }
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -315,12 +315,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             }
             else {
-                gps_data=0;
+                coords.setText("Calculating gps position...");
             }
         }
         public void onProviderDisabled(String provider) {
             System.out.println("We know "+provider+" is disabled in gps listener!");
-            if (!locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
+            /*if (!locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
                 System.out.println("Option 1");
                 gps_data=0;
                 coords.setText("Can't get location from either gps or network. Check settings!");
@@ -335,20 +335,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 } catch (SecurityException e) {
                     coords.setText("Can't get network location(security exception). Check your settings!");
                 }*/
-            }
+            //}
+            coords.setText("Gps is disabled, please enable it!");
 
 
         }
 
         public void onProviderEnabled(String provider) {
             System.out.println("Gps provider knows we enabled: "+provider);
+            coords.setText("Calculating position...");
         }
 
         public void onStatusChanged(String provider, int status, Bundle extras) {
         }
     };
 
-    LocationListener locationListenerNetwork = new LocationListener() {
+    /*LocationListener locationListenerNetwork = new LocationListener() {
         public void onLocationChanged(Location location) {
             System.out.println("Calculating network position ...");
             if (location != null && gps_data == 0) {
@@ -358,7 +360,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 coords.setText("location (network) : " + x + " " + y);
                 /*extras.putDouble("x",x);
                 extras.putDouble("y",y);
-                in.putExtras(extras);*/
+                in.putExtras(extras);
             }
             if (location==null && gps_data == 0){
                 coords.setText("Can't get location from gps or network. Check settings!");
@@ -380,7 +382,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                             locationListenerNetwork);
                 } catch (SecurityException e) {
                     coords.setText("Can't get network location(security exception). Check your settings!");
-                }*/
+                }
             }
         }
 
@@ -390,6 +392,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         public void onStatusChanged(String provider, int status, Bundle extras) {
         }
-    };
+    };*/
 
 }
