@@ -35,15 +35,20 @@ import java.util.TimerTask;
  * Created by kostas4949 on 18/3/2017.
  */
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity implements SensorEventListener{
     private Toolbar my_toolbar;
     double x,y,z;
-    int gps_data=0;
+
+    private final float[] mAccelerometerReading = new float[3];
+    private final float[] mMagnetometerReading = new float[3];
+    private final float[] mRotationMatrix = new float[16];
+    private final float[] mOrientationAngles = new float[3];
+    private boolean ble;
     boolean gps_enabled = false;
-    boolean network_enabled = false;
+    boolean rotation_compatibility=false;
     LocationManager locationManager;
     private SensorManager mSensorManager;
-    private Sensor mCompass;
+    private Sensor mCompass,mCompass1,mCompass2;
     private SurfaceView surfaceView;
     private FrameLayout cameraContainerLayout;
     private ARCamera arCamera;
@@ -57,7 +62,7 @@ public class MainActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //arOverlayView = new AROverlayView(this); tha xreiastei sto mellon gia tis koukides sthn kamera
-        /*mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
+        mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
         List<Sensor> sensors = mSensorManager.getSensorList(Sensor.TYPE_ALL);
         int i=1;
         for (Sensor sensor : sensors) {
@@ -65,9 +70,15 @@ public class MainActivity extends AppCompatActivity{
             i++;
         }
         mCompass=mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
-        if (mCompass==null){
-            System.out.println("NULL SENSOR");
-        }*/
+        if (mCompass==null || mCompass.getMinDelay()==0){
+            System.out.println("Going into compatibility mode");
+            rotation_compatibility=true;
+            mCompass1=mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+            mCompass2=mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        }
+        else {
+            System.out.println("Min delay:"+mCompass.getMinDelay());
+        }
         cameraContainerLayout = (FrameLayout) findViewById(R.id.camera_container_layout);
         surfaceView = (SurfaceView) findViewById(R.id.surface_view);
         //surfaceView.setZOrderOnTop(false);
@@ -139,7 +150,34 @@ public class MainActivity extends AppCompatActivity{
         super.onResume();
 
         requestCameraPermission();
-        //mSensorManager.registerListener(this,mCompass,SensorManager.SENSOR_DELAY_FASTEST);
+        if (!rotation_compatibility) {
+            ble = mSensorManager.registerListener(this, mCompass, SensorManager.SENSOR_DELAY_FASTEST);
+
+            if (ble == true) {
+                System.out.println("Why is is true?");
+            } else {
+                System.out.println("ha ha,false!");
+            }
+        }
+        else {
+            ble=mSensorManager.registerListener(this, mCompass1,
+                    SensorManager.SENSOR_DELAY_FASTEST);
+            if (ble==true){
+                System.out.println("Why is is true?1");
+            }
+            else {
+                System.out.println("ha ha,false!1");
+            }
+            ble=mSensorManager.registerListener(this, mCompass2,
+                    SensorManager.SENSOR_DELAY_FASTEST);
+            if (ble==true){
+                System.out.println("Why is is true?2");
+            }
+            else {
+                System.out.println("ha ha,false!2");
+            }
+
+        }
         //initAROverlayView(); tha xreiastei sto mellon gia tis koukides sthn kamera
     }
 
@@ -147,31 +185,71 @@ public class MainActivity extends AppCompatActivity{
     public void onPause() {
         super.onPause();
         releaseCamera(); //prepei na kanei release thn kamera otan einai se pause, to sygkekrimeno einai akoma buggy
-        //mSensorManager.unregisterListener(this);
-    }
-    //public void onAccuracyChanged(Sensor sensor, int accuracy) {
-    //}
 
-    /*public void onSensorChanged(SensorEvent sEvent) {
-        //System.out.println("PEW PEW");
-        if (sEvent.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
-            float[] rotationMatrixFromVector = new float[16];
-            float[] projectionMatrix = new float[16];
-            float[] rotatedProjectionMatrix = new float[16];
-            SensorManager.getRotationMatrixFromVector(rotationMatrixFromVector, sEvent.values); //Get rotation of cell phone
-            //System.out.println("CELL ROTATION: \n");
-            String bla="";
-            for (int i = 0; i < rotationMatrixFromVector.length; i++) {
-                bla=bla+rotationMatrixFromVector[i]+ " ";
-                    //System.out.print(+rotationMatrixFromVector[i]+ " ");
+            mSensorManager.unregisterListener(this);
+
+    }
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+    }
+
+    public void onSensorChanged(SensorEvent sEvent) {
+        //System.out.println("Mou ta eprhkses");
+        if (rotation_compatibility) {
+            //System.out.println("Yes compatibility!");
+            if (sEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+                System.arraycopy(sEvent.values, 0, mAccelerometerReading,
+                        0, mAccelerometerReading.length);
+
+
+            } else if (sEvent.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
+                System.arraycopy(sEvent.values, 0, mMagnetometerReading,
+                        0, mMagnetometerReading.length);
+
+
             }
-            compa.setText(bla);
-            if (arCamera != null) {
-                projectionMatrix = arCamera.getProjectionMatrix();   //Get dimensions of camera
+            if (mSensorManager.getRotationMatrix(mRotationMatrix, null,
+                    mAccelerometerReading, mMagnetometerReading)) {
+                String bla = "";
+                for (int i = 0; i < mRotationMatrix.length; i++) {
+                    bla = bla + mRotationMatrix[i] + " ";
+
+                }
+                compa.setText(bla);
+                float[] projectionMatrix = new float[16];
+                float[] rotatedProjectionMatrix = new float[16];
+
+                //mSensorManager.getOrientation(mRotationMatrix, mOrientationAngles);
+                if (arCamera != null) {
+                    projectionMatrix = arCamera.getProjectionMatrix();   //Get dimensions of camera
+                }
+                Matrix.multiplyMM(rotatedProjectionMatrix, 0, projectionMatrix, 0, mRotationMatrix, 0); //Combine rotation with dimensions of camera
+
+
             }
-            Matrix.multiplyMM(rotatedProjectionMatrix, 0, projectionMatrix, 0, rotationMatrixFromVector, 0); //Combine rotation with dimensions of camera
         }
-    }*/
+        //System.out.println("PEW PEW");
+        else {
+            if (sEvent.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
+                float[] rotationMatrixFromVector = new float[16];
+                float[] projectionMatrix = new float[16];
+                float[] rotatedProjectionMatrix = new float[16];
+                SensorManager.getRotationMatrixFromVector(rotationMatrixFromVector, sEvent.values); //Get rotation of cell phone
+                //System.out.println("CELL ROTATION: \n");
+                //System.out.println("Not compatiblity!");
+                String bla = "";
+                for (int i = 0; i < rotationMatrixFromVector.length; i++) {
+                    bla = bla + rotationMatrixFromVector[i] + " ";
+                    //System.out.print(+rotationMatrixFromVector[i]+ " ");
+                }
+                compa.setText(bla);
+                if (arCamera != null) {
+                    projectionMatrix = arCamera.getProjectionMatrix();   //Get dimensions of camera
+                }
+                Matrix.multiplyMM(rotatedProjectionMatrix, 0, projectionMatrix, 0, rotationMatrixFromVector, 0); //Combine rotation with dimensions of camera
+
+            }
+        }
+    }
 
 
     private void releaseCamera() {
