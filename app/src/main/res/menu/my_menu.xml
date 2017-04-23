@@ -5,4 +5,11 @@
     <item android:id="@+id/action_settings"
         android:title="@string/action_settings"
         app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_maps"
+        android:title="@string/maps"
+        app:showAsAction="ifRoom|withText"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:icon="@mipmap/ic_maps"></item>
 </menu>

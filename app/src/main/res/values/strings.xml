@@ -7,4 +7,5 @@
     <string name="pref_antenum_summ">Up to how many antennas would you like to be shown? (0 for unlimited)</string>
     <string name="pref_maxdistance">Maximum Distance</string>
     <string name="pref_maxdistance_summ">What is the maximum distance of the antennas? (0 for unlimited)</string>
+    <string name="maps">Maps</string>
 </resources>
