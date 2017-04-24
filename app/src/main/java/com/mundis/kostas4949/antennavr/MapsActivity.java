@@ -108,6 +108,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(camPos));
     }
 
+    private void updateCamera(float bearing) {
+        CameraPosition oldPos = mMap.getCameraPosition();
+
+        CameraPosition pos = CameraPosition.builder(oldPos).bearing(bearing).build();
+        mMap.moveCamera(CameraUpdateFactory.newCameraPosition(pos));
+    }
+
     @Override
     public void onResume() {
         super.onResume();
@@ -163,7 +170,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     mAccelerometerReading, mMagnetometerReading)) {
                 SensorManager.getOrientation(mRotationMatrix, orientation);
                 float bearing = (float)Math.toDegrees(orientation[0]) + mDeclination;
-                updateCameraBearing(mMap,bearing);
+                //updateCameraBearing(mMap,bearing);
+                updateCamera(bearing);
                 rotation_matrix=mRotationMatrix;
             }
         }
@@ -172,7 +180,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 SensorManager.getRotationMatrixFromVector(rotationMatrixFromVector, sEvent.values); //Get rotation of cell phone
                 SensorManager.getOrientation(rotationMatrixFromVector, orientation);
                 float bearing = (float)Math.toDegrees(orientation[0]) + mDeclination;
-                updateCameraBearing(mMap,bearing);
+                updateCamera(bearing);
                 rotation_matrix=rotationMatrixFromVector;
             }
         }
