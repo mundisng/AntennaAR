@@ -75,9 +75,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Toast.makeText(getApplicationContext(),"location (gps) : " + x + " " + y + "and altitude: " + z,Toast.LENGTH_SHORT).show();
                 System.out.println("(GPS)x is: " + x + "y is: " + y);
 
-                SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                        .findFragmentById(R.id.map);
-                mapFragment.getMapAsync(getApplication());
             } else {
                 //gps_data=0;
                 Toast.makeText(getApplicationContext(), "Calculating Position!", Toast.LENGTH_SHORT).show();
