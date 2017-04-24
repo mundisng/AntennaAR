@@ -47,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     boolean gps_enabled = false;
     boolean rotation_compatibility=false;
     LocationManager locationManager;
+    private AROverlay arOverlay;
     private SensorManager mSensorManager;
     private Sensor mCompass,mCompass1,mCompass2;
     private SurfaceView surfaceView;
@@ -113,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
           //  }
         //}
 
-
+        arOverlay = new AROverlay(this);
     }
 
     @Override
@@ -151,7 +152,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onResume() {
         super.onResume();
-
+        initAROverlay();
         requestCameraPermission();
         if (!rotation_compatibility) {
             ble = mSensorManager.registerListener(this, mCompass, SensorManager.SENSOR_DELAY_FASTEST);
@@ -192,6 +193,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             mSensorManager.unregisterListener(this);
 
     }
+    public void initAROverlay() {
+        if (arOverlay.getParent() != null) {
+            ((ViewGroup) arOverlay.getParent()).removeView(arOverlay);
+        }
+        cameraContainerLayout.addView(arOverlay);
+    }
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
 
@@ -226,7 +233,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     projectionMatrix = arCamera.getProjectionMatrix();   //Get dimensions of camera
                 }
                 Matrix.multiplyMM(rotatedProjectionMatrix, 0, projectionMatrix, 0, mRotationMatrix, 0); //Combine rotation with dimensions of camera
-
+                this.arOverlay.updateRotatedProjectionMatrix(rotatedProjectionMatrix);
 
             }
         }
@@ -249,7 +256,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     projectionMatrix = arCamera.getProjectionMatrix();   //Get dimensions of camera
                 }
                 Matrix.multiplyMM(rotatedProjectionMatrix, 0, projectionMatrix, 0, rotationMatrixFromVector, 0); //Combine rotation with dimensions of camera
-
+                this.arOverlay.updateRotatedProjectionMatrix(rotatedProjectionMatrix);
             }
         }
     }
@@ -320,6 +327,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         public void onLocationChanged(Location location) {
             System.out.println("Calculating gps position...");
             if (location!=null) {
+                arOverlay.updateCurrentLocation(location);
                 x = location.getLatitude();
                 y = location.getLongitude();
                 z=location.getAltitude();
