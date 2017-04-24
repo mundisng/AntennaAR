@@ -139,7 +139,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             case R.id.action_maps:
                 Toast.makeText(getApplicationContext(), "Clicked Maps Icon", Toast.LENGTH_SHORT).show();
                 Intent j = new Intent(MainActivity.this, MapsActivity.class);
+                j.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(j);
+                finish();
                 return true;
             default:
                 // If we got here, the user's action was not recognized.
