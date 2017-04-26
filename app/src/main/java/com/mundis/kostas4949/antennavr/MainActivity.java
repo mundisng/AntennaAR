@@ -97,22 +97,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             coords.setText("Can't get location.GPS is disabled!");
         }
 
-        //if (gps_enabled) {
             try { //System.out.println("Start: if (gps_enabled) is true");
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0,
                         locationListenerGps);
             } catch (SecurityException e) {
                 coords.setText("Can't get gps location(security exception). Check your settings!");
             }
-       // }
-        //if (network_enabled) {
-            // { //System.out.println("Start: if (network_enabled) is true");
-            //    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0,
-           //             locationListenerNetwork);
-          //  } catch (SecurityException e) {
-          //      coords.setText("Can't get network location(security exception). Check your settings!");
-          //  }
-        //}
+
 
         arOverlay = new AROverlay(this);
     }
@@ -157,34 +148,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         initAROverlay();
         requestCameraPermission();
         if (!rotation_compatibility) {
-            ble = mSensorManager.registerListener(this, mCompass, SensorManager.SENSOR_DELAY_FASTEST);
+            mSensorManager.registerListener(this, mCompass, SensorManager.SENSOR_DELAY_FASTEST);
 
-            if (ble == true) {
-                System.out.println("Why is is true?");
-            } else {
-                System.out.println("ha ha,false!");
-            }
         }
         else {
-            ble=mSensorManager.registerListener(this, mCompass1,
+            mSensorManager.registerListener(this, mCompass1,
                     SensorManager.SENSOR_DELAY_FASTEST);
-            if (ble==true){
-                System.out.println("Why is is true?1");
-            }
-            else {
-                System.out.println("ha ha,false!1");
-            }
-            ble=mSensorManager.registerListener(this, mCompass2,
+            mSensorManager.registerListener(this, mCompass2,
                     SensorManager.SENSOR_DELAY_FASTEST);
-            if (ble==true){
-                System.out.println("Why is is true?2");
-            }
-            else {
-                System.out.println("ha ha,false!2");
-            }
+
 
         }
-        //initAROverlayView(); tha xreiastei sto mellon gia tis koukides sthn kamera
     }
 
     @Override
@@ -205,9 +179,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public void onSensorChanged(SensorEvent sEvent) {
-        //System.out.println("Mou ta eprhkses");
         if (rotation_compatibility) {
-            //System.out.println("Yes compatibility!");
             if (sEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
                 System.arraycopy(sEvent.values, 0, mAccelerometerReading,
                         0, mAccelerometerReading.length);
@@ -273,12 +245,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             camera = null;
         }
     }
-    /*public void initAROverlayView() {  tha xreiastei sto mellon gia tis koukides sthn kamera
-        if (arOverlayView.getParent() != null) {
-            ((ViewGroup) arOverlayView.getParent()).removeView(arOverlayView);
-        }
-        cameraContainerLayout.addView(arOverlayView);
-    }*/
+
 
     public void requestCameraPermission() {
         System.out.println("We requested camera permission!");

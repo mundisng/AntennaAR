@@ -8,7 +8,7 @@ import android.location.Location;
 
 public class LocationConverter {
     private final static double WGS84_A = 6378137.0;                  // WGS 84 semi-major axis constant in meters
-    private final static double WGS84_E2 = 0.00669437999014;          // square of WGS 84 eccentricity
+    private final static double WGS84_E2 = 0.00669437999014139974;          // square of WGS 84 eccentricity
 
     public static float[] WSG84toECEF(Location location) {
         double radLat = Math.toRadians(location.getLatitude());
