@@ -24,7 +24,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, SensorEventListener {
 
-    private GoogleMap mMap;
+    private GoogleMap mMap=null;
     boolean gps_enabled = false;
     LocationManager locationManager;
     double x,y,z;
@@ -109,10 +109,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void updateCamera(float bearing) {
+        if(mMap!=null){
         CameraPosition oldPos = mMap.getCameraPosition();
 
         CameraPosition pos = CameraPosition.builder(oldPos).bearing(bearing).build();
-        mMap.moveCamera(CameraUpdateFactory.newCameraPosition(pos));
+        mMap.moveCamera(CameraUpdateFactory.newCameraPosition(pos));}
+        else{
+            System.out.println("mMap BEARING NULLERINO");
+        }
     }
 
     @Override
@@ -207,10 +211,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 //gps_data=0;
                 Toast.makeText(getApplicationContext(), "Calculating Position!", Toast.LENGTH_SHORT).show();
             }
+            if(mMap!=null){
             mMap.clear();
             LatLng myloc = new LatLng(x, y);
             mMap.addMarker(new MarkerOptions().position(myloc).title("You are here!"));
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(myloc));
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(myloc));}
+            else{
+                System.out.println("mMap NULLERINO");
+            }
         }
 
 
