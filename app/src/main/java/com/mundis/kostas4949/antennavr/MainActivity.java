@@ -25,6 +25,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.view.ViewGroup.LayoutParams;
 
 import java.util.List;
 import java.util.Timer;
@@ -53,8 +54,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private SurfaceView surfaceView;
     private FrameLayout cameraContainerLayout;
     private ARCamera arCamera;
-    TextView coords,compa;
     private Camera camera;
+    TextView coords,compa;
+
     //private AROverlayView arOverlayView; tha xreiastei sto mellon gia tis koukides sthn kamera
     private final static int REQUEST_CAMERA_PERMISSIONS_CODE = 11;
     Intent in;
@@ -81,12 +83,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             System.out.println("Min delay:"+mCompass.getMinDelay());
         }
         cameraContainerLayout = (FrameLayout) findViewById(R.id.camera_container_layout);
-        surfaceView = (SurfaceView) findViewById(R.id.surface_view);
+        //surfaceView = (SurfaceView) findViewById(R.id.surface_view);
         //surfaceView.setZOrderOnTop(false);
         coords = (TextView) findViewById(R.id.tv_current_location);
         compa= (TextView) findViewById(R.id.textView2);
         my_toolbar = (Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(my_toolbar);
+        arCamera=new ARCamera(this, (SurfaceView) findViewById(R.id.surface_view));
+        arCamera.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        cameraContainerLayout.addView(arCamera);
        // coords = (TextView) findViewById(R.id.coord);
         coords.setText("Calculating position....");
         //compa.setText("Calculating phone rotation..");
@@ -238,7 +243,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private void releaseCamera() {
         if(camera != null) {
-            camera.setPreviewCallback(null);
+            //camera.setPreviewCallback(null);
             camera.stopPreview();
             arCamera.setCamera(null);
             camera.release();
@@ -255,15 +260,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             this.requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSIONS_CODE);
         } else {
             System.out.println("Camera option 2");
-            initARCameraView();
+            initCamera();
         }
     }
 
-    public void initARCameraView() {
+    /*public void initARCameraView() {
         reloadSurfaceView();
 
         if (arCamera == null) {
-            arCamera = new ARCamera(this, surfaceView);
+           // arCamera = new ARCamera(this, surfaceView);
         }
         if (arCamera.getParent() != null) {
             ((ViewGroup) arCamera.getParent()).removeView(arCamera);
@@ -271,15 +276,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         cameraContainerLayout.addView(arCamera);
         arCamera.setKeepScreenOn(true);
         initCamera();
-    }
+    }*/
 
-    private void reloadSurfaceView() {
+  /*  private void reloadSurfaceView() {
         if (surfaceView.getParent() != null) {
             ((ViewGroup) surfaceView.getParent()).removeView(surfaceView);
         }
 
         cameraContainerLayout.addView(surfaceView);
-    }
+    }*/
     private void initCamera() {
         int numCams = Camera.getNumberOfCameras();
         if(numCams > 0){

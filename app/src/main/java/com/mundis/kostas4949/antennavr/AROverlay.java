@@ -51,11 +51,11 @@ public class AROverlay extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-
-        if (currentLocation == null) {
+           System.out.println("We got in here!");
+      //  if (currentLocation == null) {
             //System.out.println("Current location is null?");
-            return;
-        }
+       //     return;
+       // }
        //System.out.println("Starting drawing!");
         final int radius = 70;
         Paint paint = new Paint();
@@ -64,7 +64,7 @@ public class AROverlay extends View {
        // paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
        // paint.setTextSize(60);
 
-        for (int i = 0; i < arPoints.size(); i ++) {
+       /* for (int i = 0; i < arPoints.size(); i ++) {
             System.out.println("Drawing "+arPoints.size()+" points.");
             float[] currentLocationInECEF = LocationConverter.WSG84toECEF(currentLocation);
             System.out.println("Location In ECEF: x: "+currentLocationInECEF[0]+" y: "+currentLocationInECEF[1]+" z: "+currentLocationInECEF[2]);
@@ -74,18 +74,18 @@ public class AROverlay extends View {
             System.out.println("Position in ENU: East: "+pointInENU[0]+" North: "+pointInENU[1]+"Up: "+pointInENU[2]);
             float[] cameraCoordinateVector = new float[4];
             Matrix.multiplyMV(cameraCoordinateVector, 0, rotatedProjectionMatrix, 0, pointInENU, 0);
-
+*/
             // cameraCoordinateVector[2] is z, that always less than 0 to display on right position
             // if z > 0, the point will display on the opposite
-            if (cameraCoordinateVector[2] < 0) {
-                System.out.println("Did we get in here?");
+            //if (cameraCoordinateVector[2] < 0) {
+            //    System.out.println("Did we get in here?");
                // float x  = (0.5f + cameraCoordinateVector[0]/cameraCoordinateVector[3]) * canvas.getWidth();
                // float y = (0.5f - cameraCoordinateVector[1]/cameraCoordinateVector[3]) * canvas.getHeight();
                 // System.out.println("DRAWING: X: "+x+" Y: "+y);
                 canvas.drawCircle(300, 300, radius, paint);
                // canvas.drawText(arPoints.get(i).getName(), x - (30 * arPoints.get(i).getName().length() / 2), y - 80, paint);
-            }
-        }
+           // }
+        //}
     }
 }
 
