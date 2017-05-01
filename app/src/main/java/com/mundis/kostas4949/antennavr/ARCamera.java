@@ -39,27 +39,28 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
     private final static float Z_NEAR = 0.5f;
     private final static float Z_FAR = 2000;
 
-    public ARCamera(Context context, SurfaceView surfaceView) {
+    public ARCamera(Context context,SurfaceView sv) {
         super(context);
 
-        this.surfaceView = surfaceView;
+        surfaceView = sv;
+        // addView(surfaceView);
         this.activity = (Activity) context;
-        surfaceHolder = this.surfaceView.getHolder();
+        surfaceHolder = surfaceView.getHolder();
         surfaceHolder.addCallback(this);
         surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     }
 
-    public void setCamera(Camera camera) {
-        this.camera = camera;
+    public void setCamera(Camera camera2) {
+        camera = camera2;
         if (this.camera != null) {
-            supportedPreviewSizes = this.camera.getParameters().getSupportedPreviewSizes();
+            supportedPreviewSizes = camera.getParameters().getSupportedPreviewSizes();
             requestLayout();
-            Camera.Parameters params = this.camera.getParameters();
+            Camera.Parameters params = camera.getParameters();
 
             List<String> focusModes = params.getSupportedFocusModes();
             if (focusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
                 params.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-                this.camera.setParameters(params);
+                camera.setParameters(params);
             }
         }
     }
@@ -109,7 +110,7 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
 
                 parameters = camera.getParameters();
 
-                int orientation = getCameraOrientation();
+                int orientation = getCameraOrientation();   //Kapws prepei na gurisoume thn kamera, paei plagia twra. Ama kaneis uncomment ayto, crasharei.
 
                 camera.setDisplayOrientation(orientation);
                 camera.getParameters().setRotation(orientation);
@@ -196,9 +197,9 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
             }
         }
 
-        if(optimalSize == null) {
-            optimalSize = sizes.get(0);
-        }
+        //  if(optimalSize == null) {
+        //      optimalSize = sizes.get(0);
+        //  }
 
         return optimalSize;
     }
@@ -207,17 +208,20 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
         if(camera != null) {
             this.cameraWidth = width;
             this.cameraHeight = height;
-             //System.out.println("Width: "+this.cameraWidth+" Height: "+this.cameraHeight);
-            Camera.Parameters params = camera.getParameters();
-            List<Camera.Size> previewSizes = parameters.getSupportedPreviewSizes();
-            Camera.Size previewSize = previewSizes.get(0);
-            params.setPreviewSize(previewSize.width, previewSize.height);
-            requestLayout();
+            //System.out.println("Width: "+this.cameraWidth+" Height: "+this.cameraHeight);
+            if (camera!=null) {
+                Camera.Parameters params = camera.getParameters();
+                //List<Camera.Size> previewSizes = parameters.getSupportedPreviewSizes();
+                //Camera.Size previewSize = previewSizes.get(0);
+                //params.setPreviewSize(previewSize.width, previewSize.height);
+                parameters.setPreviewSize(previewSize.width, previewSize.height);
+                requestLayout();
 
-            camera.setParameters(params);
-            camera.startPreview();
+                camera.setParameters(params);
+                camera.startPreview();
 
-            generateProjectionMatrix();
+                generateProjectionMatrix();
+            }
         }
     }
 

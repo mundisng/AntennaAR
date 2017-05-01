@@ -25,6 +25,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.view.ViewGroup.LayoutParams;
 
 import java.util.List;
 import java.util.Timer;
@@ -53,8 +54,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private SurfaceView surfaceView;
     private FrameLayout cameraContainerLayout;
     private ARCamera arCamera;
-    TextView coords,compa;
     private Camera camera;
+    TextView coords,compa;
+
     //private AROverlayView arOverlayView; tha xreiastei sto mellon gia tis koukides sthn kamera
     private final static int REQUEST_CAMERA_PERMISSIONS_CODE = 11;
     Intent in;
@@ -81,13 +83,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             System.out.println("Min delay:"+mCompass.getMinDelay());
         }
         cameraContainerLayout = (FrameLayout) findViewById(R.id.camera_container_layout);
-        surfaceView = (SurfaceView) findViewById(R.id.surface_view);
+        //surfaceView = (SurfaceView) findViewById(R.id.surface_view);
         //surfaceView.setZOrderOnTop(false);
         coords = (TextView) findViewById(R.id.tv_current_location);
         compa= (TextView) findViewById(R.id.textView2);
         my_toolbar = (Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(my_toolbar);
-       // coords = (TextView) findViewById(R.id.coord);
+        arCamera=new ARCamera(this, (SurfaceView) findViewById(R.id.surface_view));
+        arCamera.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        cameraContainerLayout.addView(arCamera);
+        // coords = (TextView) findViewById(R.id.coord);
         coords.setText("Calculating position....");
         //compa.setText("Calculating phone rotation..");
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
@@ -97,12 +102,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             coords.setText("Can't get location.GPS is disabled!");
         }
 
-            try { //System.out.println("Start: if (gps_enabled) is true");
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0,
-                        locationListenerGps);
-            } catch (SecurityException e) {
-                coords.setText("Can't get gps location(security exception). Check your settings!");
-            }
+        try { //System.out.println("Start: if (gps_enabled) is true");
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0,
+                    locationListenerGps);
+        } catch (SecurityException e) {
+            coords.setText("Can't get gps location(security exception). Check your settings!");
+        }
 
 
         arOverlay = new AROverlay(this);
@@ -166,7 +171,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onPause();
         releaseCamera(); //prepei na kanei release thn kamera otan einai se pause, to sygkekrimeno einai akoma buggy
 
-            mSensorManager.unregisterListener(this);
+        mSensorManager.unregisterListener(this);
 
     }
     public void initAROverlay() {
@@ -238,7 +243,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private void releaseCamera() {
         if(camera != null) {
-            camera.setPreviewCallback(null);
+            //camera.setPreviewCallback(null);
             camera.stopPreview();
             arCamera.setCamera(null);
             camera.release();
@@ -255,15 +260,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             this.requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSIONS_CODE);
         } else {
             System.out.println("Camera option 2");
-            initARCameraView();
+            initCamera();
         }
     }
 
-    public void initARCameraView() {
+    /*public void initARCameraView() {
         reloadSurfaceView();
-
         if (arCamera == null) {
-            arCamera = new ARCamera(this, surfaceView);
+           // arCamera = new ARCamera(this, surfaceView);
         }
         if (arCamera.getParent() != null) {
             ((ViewGroup) arCamera.getParent()).removeView(arCamera);
@@ -271,15 +275,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         cameraContainerLayout.addView(arCamera);
         arCamera.setKeepScreenOn(true);
         initCamera();
-    }
+    }*/
 
-    private void reloadSurfaceView() {
-        if (surfaceView.getParent() != null) {
-            ((ViewGroup) surfaceView.getParent()).removeView(surfaceView);
-        }
-
-        cameraContainerLayout.addView(surfaceView);
-    }
+    /*  private void reloadSurfaceView() {
+          if (surfaceView.getParent() != null) {
+              ((ViewGroup) surfaceView.getParent()).removeView(surfaceView);
+          }
+          cameraContainerLayout.addView(surfaceView);
+      }*/
     private void initCamera() {
         int numCams = Camera.getNumberOfCameras();
         if(numCams > 0){
@@ -314,21 +317,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             System.out.println("We know "+provider+" is disabled in gps listener!");
             coords.setText("Gps disabled, please enable it!");
             //if (!locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
-           //     System.out.println("Option 1");
-           //     gps_data=0;
-           //     coords.setText("Can't get location from either gps or network. Check settings!");
-          //  }
-           // else{
+            //     System.out.println("Option 1");
+            //     gps_data=0;
+            //     coords.setText("Can't get location from either gps or network. Check settings!");
+            //  }
+            // else{
             //    gps_data=0;
-           //     System.out.println("Option 2");
-           //     coords.setText("Calculating position...");
+            //     System.out.println("Option 2");
+            //     coords.setText("Calculating position...");
                 /*try {
                     locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0,
                             locationListenerNetwork);
                 } catch (SecurityException e) {
                     coords.setText("Can't get network location(security exception). Check your settings!");
                 }*/
-           // }
+            // }
 
 
         }
@@ -358,7 +361,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             if (location==null && gps_data == 0){
                 coords.setText("Can't get location from gps or network. Check settings!");
             }
-
         }
         public void onProviderDisabled(String provider) {
             System.out.println("We know "+provider+" is disabled in network listener!");
@@ -378,11 +380,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
             }
         }
-
         public void onProviderEnabled(String provider) {
             System.out.println("Network provider knows we enabled: "+provider);
         }
-
         public void onStatusChanged(String provider, int status, Bundle extras) {
         }
     };*/
