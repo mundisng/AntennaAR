@@ -1,6 +1,7 @@
 package com.mundis.kostas4949.antennavr;
 
 import android.Manifest;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -127,10 +128,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             case R.id.action_settings:
                 // User chose the "Settings" item, show the app settings UI...
                 //Toast.makeText(MainActivity.this, "Settings Pressed MAIN", Toast.LENGTH_SHORT).show();
-                Intent i = new Intent(MainActivity.this, SettingsActivity.class);
+                Intent i = new Intent(this, SettingsActivity.class);
                 //i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                i.putExtra("EXTRA_PARENT_COMPONENT_NAME", new ComponentName(this, MainActivity.class));
                 startActivity(i);
-                //finish();
+                finish();
                 return true;
             case R.id.action_maps:
                 Toast.makeText(getApplicationContext(), "Clicked Maps Icon", Toast.LENGTH_SHORT).show();

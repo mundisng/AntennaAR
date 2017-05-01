@@ -1,6 +1,8 @@
 package com.mundis.kostas4949.antennavr;
 
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.GeomagneticField;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -12,6 +14,10 @@ import android.location.LocationManager;
 import android.opengl.Matrix;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -22,8 +28,8 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, SensorEventListener {
-
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, SensorEventListener {
+    private Toolbar my_toolbar;
     private GoogleMap mMap=null;
     boolean gps_enabled = false;
     LocationManager locationManager;
@@ -69,11 +75,48 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         else {
             System.out.println("Min delay:"+mCompass.getMinDelay());
         }
-
+        my_toolbar = (Toolbar) findViewById(R.id.app_bar);
+        setSupportActionBar(my_toolbar);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+
+        getMenuInflater().inflate(R.menu.my_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                // User chose the "Settings" item, show the app settings UI...
+                //Toast.makeText(MainActivity.this, "Settings Pressed MAIN", Toast.LENGTH_SHORT).show();
+                Intent i = new Intent(this, SettingsActivity.class);
+                //i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                i.putExtra("EXTRA_PARENT_COMPONENT_NAME", new ComponentName(this, MapsActivity.class));
+                startActivity(i);
+                finish();
+                return true;
+            case R.id.action_maps:
+                Toast.makeText(getApplicationContext(), "Clicked Maps Icon", Toast.LENGTH_SHORT).show();
+                //Intent j = new Intent(MainActivity.this, MapsActivity.class);
+                //j.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                //startActivity(j);
+                //finish();
+                return true;
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+
+        }
+    }
+
 
 
     /**
