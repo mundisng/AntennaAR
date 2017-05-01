@@ -3,6 +3,7 @@ package com.mundis.kostas4949.antennavr;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.hardware.GeomagneticField;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -108,11 +109,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 finish();
                 return true;
             case R.id.action_mode:
-                Toast.makeText(getApplicationContext(), "Clicked Camera Icon", Toast.LENGTH_SHORT).show();
-                //Intent j = new Intent(MainActivity.this, MapsActivity.class);
-                //j.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                //startActivity(j);
-                //finish();
+                //Toast.makeText(getApplicationContext(), "Clicked Camera Icon", Toast.LENGTH_SHORT).show();
+                SharedPreferences sharedPref = getSharedPreferences(getString(R.string.pref_file_key), Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putBoolean(getString(R.string.cameramode), true);
+                editor.commit();
+                Intent j = new Intent(MapsActivity.this, MainActivity.class);
+                j.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(j);
+                finish();
                 return true;
             default:
                 // If we got here, the user's action was not recognized.

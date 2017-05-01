@@ -1,6 +1,8 @@
 package com.mundis.kostas4949.antennavr;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -12,6 +14,7 @@ import android.widget.Toast;
 public class WelcomeActivity extends AppCompatActivity {
     private static int TIME_OUT = 4000;
     private static Toolbar my_toolbar;
+    boolean cameramode_flag=true;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -21,8 +24,16 @@ public class WelcomeActivity extends AppCompatActivity {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                Intent i = new Intent(WelcomeActivity.this, MainActivity.class);
-                startActivity(i);
+                SharedPreferences sharedPref =getSharedPreferences(getString(R.string.pref_file_key), Context.MODE_PRIVATE);
+                cameramode_flag=sharedPref.getBoolean(getString(R.string.cameramode),true);
+                if(cameramode_flag){
+                    Intent i = new Intent(WelcomeActivity.this, MainActivity.class);
+                    startActivity(i);
+                }
+                else{
+                    Intent i= new Intent(WelcomeActivity.this,MapsActivity.class);
+                    startActivity(i);
+                }
                 finish();
             }
         }, TIME_OUT);

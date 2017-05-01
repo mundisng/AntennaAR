@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.hardware.Sensor;
@@ -140,7 +141,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 finish();
                 return true;
             case R.id.action_mode:
-                Toast.makeText(getApplicationContext(), "Clicked Mode Icon", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getApplicationContext(), "Clicked Mode Icon", Toast.LENGTH_SHORT).show();
+                SharedPreferences sharedPref = getSharedPreferences(getString(R.string.pref_file_key), Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putBoolean(getString(R.string.cameramode), false);
+                editor.commit();
                 Intent j = new Intent(MainActivity.this, MapsActivity.class);
                 j.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(j);

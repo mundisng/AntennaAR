@@ -8,4 +8,6 @@
     <string name="pref_maxdistance">Maximum Distance</string>
     <string name="pref_maxdistance_summ">What is the maximum distance of the antennas? (0 for unlimited)</string>
     <string name="mode">Mode</string>
+    <string name="pref_file_key">mundis.kostas4949.antennavr</string>
+    <string name="cameramode">cameramode_flag</string>
 </resources>
