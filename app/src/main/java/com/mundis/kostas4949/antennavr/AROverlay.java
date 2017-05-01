@@ -67,9 +67,9 @@ public class AROverlay extends View {
 
        for (int i = 0; i < arPoints.size(); i ++) {
             System.out.println("Drawing "+arPoints.size()+" points.");
-            float[] currentLocationInECEF = LocationConverter.WSG84toECEF(currentLocation);
+            float[] currentLocationInECEF = LocationConverter.WGS84toECEF(currentLocation);
             System.out.println("Location In ECEF: x: "+currentLocationInECEF[0]+" y: "+currentLocationInECEF[1]+" z: "+currentLocationInECEF[2]);
-            float[] pointInECEF = LocationConverter.WSG84toECEF(arPoints.get(i).getLocation());
+            float[] pointInECEF = LocationConverter.WGS84toECEF(arPoints.get(i).getLocation());
             System.out.println("Location of Point in ECEF: x: "+pointInECEF[0]+" y: "+pointInECEF[1]+" z: "+pointInECEF[2]);
             float[] pointInENU = LocationConverter.ECEFtoENU(currentLocation, currentLocationInECEF, pointInECEF);
             System.out.println("Position in ENU: East: "+pointInENU[0]+" North: "+pointInENU[1]+"Up: "+pointInENU[2]);
