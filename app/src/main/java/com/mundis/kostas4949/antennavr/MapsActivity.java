@@ -87,6 +87,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Inflate the menu; this adds items to the action bar if it is present.
 
         getMenuInflater().inflate(R.menu.my_menu, menu);
+        MenuItem item = menu.findItem(R.id.action_mode);
+        if (item != null) {
+            int id=getResources().getIdentifier("ic_camera","mipmap",getPackageName());
+            item.setIcon(id);
+        }
         return true;
     }
 
@@ -102,8 +107,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 startActivity(i);
                 finish();
                 return true;
-            case R.id.action_maps:
-                Toast.makeText(getApplicationContext(), "Clicked Maps Icon", Toast.LENGTH_SHORT).show();
+            case R.id.action_mode:
+                Toast.makeText(getApplicationContext(), "Clicked Camera Icon", Toast.LENGTH_SHORT).show();
                 //Intent j = new Intent(MainActivity.this, MapsActivity.class);
                 //j.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 //startActivity(j);

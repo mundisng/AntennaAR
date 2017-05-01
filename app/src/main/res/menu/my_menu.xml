@@ -6,10 +6,9 @@
         android:title="@string/action_settings"
         app:showAsAction="never"/>
     <item
-        android:id="@+id/action_maps"
-        android:title="@string/maps"
+        android:id="@+id/action_mode"
+        android:title="@string/mode"
         app:showAsAction="ifRoom|withText"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:icon="@mipmap/ic_maps"></item>
+        android:layout_alignParentRight="true"></item>
 </menu>

@@ -119,6 +119,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         // Inflate the menu; this adds items to the action bar if it is present.
 
         getMenuInflater().inflate(R.menu.my_menu, menu);
+        MenuItem item = menu.findItem(R.id.action_mode);
+        if (item != null) {
+            int id=getResources().getIdentifier("ic_maps","mipmap",getPackageName());
+            item.setIcon(id);
+        }
         return true;
     }
 
@@ -134,8 +139,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 startActivity(i);
                 finish();
                 return true;
-            case R.id.action_maps:
-                Toast.makeText(getApplicationContext(), "Clicked Maps Icon", Toast.LENGTH_SHORT).show();
+            case R.id.action_mode:
+                Toast.makeText(getApplicationContext(), "Clicked Mode Icon", Toast.LENGTH_SHORT).show();
                 Intent j = new Intent(MainActivity.this, MapsActivity.class);
                 j.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(j);
