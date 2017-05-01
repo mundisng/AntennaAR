@@ -167,7 +167,7 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
 
     private Camera.Size getOptimalPreviewSize(List<Camera.Size> sizes, int width, int height) {
         final double ASPECT_TOLERANCE = 0.1;
-        double targetRatio = (double) height / width;
+        double targetRatio = (double) width / height;
         if (sizes == null) return null;
 
         Camera.Size optimalSize = null;
