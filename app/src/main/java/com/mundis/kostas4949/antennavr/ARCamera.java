@@ -44,7 +44,7 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
 
         surfaceView = sv;
        // addView(surfaceView);
-        //this.activity = (Activity) context;
+        this.activity = (Activity) context;
         surfaceHolder = surfaceView.getHolder();
         surfaceHolder.addCallback(this);
         surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
@@ -110,10 +110,10 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
 
                 parameters = camera.getParameters();
 
-                //int orientation = getCameraOrientation();   Kapws prepei na gurisoume thn kamera, paei plagia twra. Ama kaneis uncomment ayto, crasharei.
+                int orientation = getCameraOrientation();   //Kapws prepei na gurisoume thn kamera, paei plagia twra. Ama kaneis uncomment ayto, crasharei.
 
-               // camera.setDisplayOrientation(orientation);
-              //  camera.getParameters().setRotation(orientation);
+                camera.setDisplayOrientation(orientation);
+                camera.getParameters().setRotation(orientation);
 
                 camera.setPreviewDisplay(holder);
             }
