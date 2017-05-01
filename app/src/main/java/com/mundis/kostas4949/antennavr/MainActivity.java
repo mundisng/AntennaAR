@@ -311,6 +311,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             }
             else {
+                arOverlay.updateCurrentLocation(location);
                 //gps_data=0;
                 coords.setText("Calculating position...");
             }
@@ -318,6 +319,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         public void onProviderDisabled(String provider) {
             System.out.println("We know "+provider+" is disabled in gps listener!");
             coords.setText("Gps disabled, please enable it!");
+            arOverlay.updateCurrentLocation(null);
             //if (!locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
            //     System.out.println("Option 1");
            //     gps_data=0;
@@ -344,7 +346,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         public void onStatusChanged(String provider, int status, Bundle extras) {
-
+      if (status==0){
+          arOverlay.updateCurrentLocation(null);
+      }
+      if (status==1){
+          arOverlay.updateCurrentLocation(null);
+          coords.setText("Calculating position...");
+      }
         }
     };
 
