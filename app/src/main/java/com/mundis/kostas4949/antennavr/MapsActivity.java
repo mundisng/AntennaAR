@@ -46,7 +46,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private final float[] rotationMatrixFromVector = new float[16];
     private float[] rotation_matrix;
     private GeomagneticField field;
-    private float mDeclination;
+    private float mDeclination,bearing;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +60,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Toast.makeText(getApplicationContext(), "Can't get location.GPS is disabled!", Toast.LENGTH_SHORT).show();
         }
         try { //System.out.println("Start: if (gps_enabled) is true");
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListenerGps);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, locationListenerGps);
         } catch (SecurityException e) {
             Toast.makeText(getApplicationContext(),"Can't get gps location(security exception). Check your settings!",Toast.LENGTH_SHORT).show();
         }
@@ -143,9 +143,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        LatLng myloc = new LatLng(x, y);
-        mMap.addMarker(new MarkerOptions().position(myloc).title("You are here!"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(myloc));
+        //LatLng myloc = new LatLng(x, y);
+        //mMap.addMarker(new MarkerOptions().position(myloc).title("You are here!"));
+        //mMap.moveCamera(CameraUpdateFactory.newLatLng(myloc));
         //updateCameraBearing(mMap,rotation_matrix);
     }
     ////////////////////////////////////////////////////////////
@@ -166,7 +166,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         CameraPosition oldPos = mMap.getCameraPosition();
 
         CameraPosition pos = CameraPosition.builder(oldPos).bearing(bearing).build();
-        mMap.moveCamera(CameraUpdateFactory.newCameraPosition(pos));}
+        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(pos));}
         else{
             System.out.println("mMap BEARING NULLERINO");
         }
@@ -226,9 +226,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             if (mSensorManager.getRotationMatrix(mRotationMatrix, null,
                     mAccelerometerReading, mMagnetometerReading)) {
                 SensorManager.getOrientation(mRotationMatrix, orientation);
-                float bearing = (float)Math.toDegrees(orientation[0]) + mDeclination;
+                bearing = (float)Math.toDegrees(orientation[0]) + mDeclination;
                 //updateCameraBearing(mMap,bearing);
-                updateCamera(bearing);
+                //updateCamera(bearing);
                 rotation_matrix=mRotationMatrix;
             }
         }
@@ -236,8 +236,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             if (sEvent.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
                 SensorManager.getRotationMatrixFromVector(rotationMatrixFromVector, sEvent.values); //Get rotation of cell phone
                 SensorManager.getOrientation(rotationMatrixFromVector, orientation);
-                float bearing = (float)Math.toDegrees(orientation[0]) + mDeclination;
-                updateCamera(bearing);
+                bearing = (float)Math.toDegrees(orientation[0]) + mDeclination;
+                //updateCamera(bearing);
                 rotation_matrix=rotationMatrixFromVector;
             }
         }
@@ -268,7 +268,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             mMap.clear();
             LatLng myloc = new LatLng(x, y);
             mMap.addMarker(new MarkerOptions().position(myloc).title("You are here!"));
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(myloc));}
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(myloc));
+            updateCamera(bearing);
+            }
             else{
                 System.out.println("mMap NULLERINO");
             }
