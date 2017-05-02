@@ -32,7 +32,7 @@ public class AROverlay extends View {
         //Demo points
         System.out.println("We got in AROverlay");
        // if (!global.alreadycached) {
-            DatabaseAccess databaseAccess = DatabaseAccess.getInstance(this.context);
+            DatabaseAccess databaseAccess = DatabaseAccess.getInstance(this.context);  //kane comment oles aytes tis grammes ama sou kollaei to kinhto
             System.out.println("Opening database!");
             databaseAccess.open();
             heya = databaseAccess.getAllCellCoords();
