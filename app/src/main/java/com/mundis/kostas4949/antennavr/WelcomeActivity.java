@@ -1,5 +1,6 @@
 package com.mundis.kostas4949.antennavr;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -63,3 +64,4 @@ public class WelcomeActivity extends AppCompatActivity {
         }
     }*/
 }
+

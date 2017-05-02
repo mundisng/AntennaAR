@@ -1,6 +1,7 @@
 package com.mundis.kostas4949.antennavr;
 
 import android.Manifest;
+import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -57,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private FrameLayout cameraContainerLayout;
     private ARCamera arCamera;
     private Camera camera;
-    TextView coords,compa;
+    TextView coords;//compa;
 
     //private AROverlayView arOverlayView; tha xreiastei sto mellon gia tis koukides sthn kamera
     private final static int REQUEST_CAMERA_PERMISSIONS_CODE = 11;
@@ -65,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
         //arOverlayView = new AROverlayView(this); tha xreiastei sto mellon gia tis koukides sthn kamera
         mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
@@ -88,7 +90,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //surfaceView = (SurfaceView) findViewById(R.id.surface_view);
         //surfaceView.setZOrderOnTop(false);
         coords = (TextView) findViewById(R.id.tv_current_location);
-        compa= (TextView) findViewById(R.id.textView2);
+        //compa= (TextView) findViewById(R.id.textView2);
         my_toolbar = (Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(my_toolbar);
         arCamera=new ARCamera(this, (SurfaceView) findViewById(R.id.surface_view));
@@ -215,7 +217,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     bla = bla + mRotationMatrix[i] + " ";
 
                 }
-                compa.setText(bla);
+                //compa.setText(bla);
                 float[] projectionMatrix = new float[16];
                 float[] rotatedProjectionMatrix = new float[16];
 
@@ -242,7 +244,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     bla = bla + rotationMatrixFromVector[i] + " ";
                     //System.out.print(+rotationMatrixFromVector[i]+ " ");
                 }
-                compa.setText(bla);
+                //compa.setText(bla);
                 if (arCamera != null) {
                     projectionMatrix = arCamera.getProjectionMatrix();   //Get dimensions of camera
                 }
