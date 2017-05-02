@@ -30,12 +30,19 @@ public class AROverlay extends View {
 
         //Demo points
         System.out.println("We got in AROverlay");
-        arPoints = new ArrayList<ARCoord>() {{
+        DatabaseAccess databaseAccess = DatabaseAccess.getInstance(this.context);
+        System.out.println("Opening database!");
+        databaseAccess.open();
+        ArrayList<ARCoord> heya=databaseAccess.getAllCellCoords();
+        System.out.println("Got all data!");
+        databaseAccess.close();
+        System.out.println("Closed database!");
+       // arPoints = new ArrayList<ARCoord>() {{
            // add(new ARCoord("Sun Wheel", 16.0404856, 108.2262447, 0));
            // add(new ARCoord("Linh Ung Pagoda", 16.1072989, 108.2343984, 0));
-            add(new ARCoord("testing",35.188726,25.718366,30));
-            add(new ARCoord("testing2",35.188476,25.718780,40));
-        }};
+           // add(new ARCoord("testing",35.188726,25.718366,30));
+          //  add(new ARCoord("testing2",35.188476,25.718780,40));
+       // }};
     }
 
     public void updateRotatedProjectionMatrix(float[] rotatedProjectionMatrix) {
@@ -53,12 +60,12 @@ public class AROverlay extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
           // System.out.println("We got in here!");
-       if (currentLocation == null) {
+       //if (currentLocation == null) {
             //System.out.println("Current location is null?");
             return;
-        }
+      //  }
        //System.out.println("Starting drawing!");
-        final int radius = 30;
+      /*  final int radius = 30;
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setStyle(Paint.Style.FILL);
         paint.setColor(Color.WHITE);
@@ -86,7 +93,7 @@ public class AROverlay extends View {
                 canvas.drawCircle(x, y, radius, paint);
                 canvas.drawText(arPoints.get(i).getName(), x - (30 * arPoints.get(i).getName().length() / 2), y - 80, paint);
             }
-        }
+        }*/
     }
 }
 
