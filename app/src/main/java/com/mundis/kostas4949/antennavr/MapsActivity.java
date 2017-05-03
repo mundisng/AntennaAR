@@ -39,6 +39,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     final int MARKER_UPDATE_INTERVAL = 2000; /* milliseconds */
     Handler my_handler = new Handler();
     private Marker my_last_known_loc,last_loc_antennas_updated;
+    private Context my_context;
 
     private Toolbar my_toolbar;
     private GoogleMap mMap=null;
@@ -62,6 +63,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        my_context=this;
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         //////////////////////////////////////////////////
@@ -98,12 +100,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         //my_antennas= databaseAccess.getAllCellCoords();
         //databaseAccess.close();
         ////////////////////////MANUAL////////////////////////////////////
-        my_antennas=new ArrayList<>();
-        my_antennas.add(new ARCoord("coconut",24.25,42.54,0));
-        my_antennas.add(new ARCoord("my",21.5,42.54,0));
-        my_antennas.add(new ARCoord("name",14.25,42.54,0));
-        my_antennas.add(new ARCoord("is",44.25,42.54,0));
-        my_antennas.add(new ARCoord("what",32.25,42.54,0));
+        //my_antennas=new ArrayList<>();
+        //my_antennas.add(new ARCoord("coconut",24.25,42.54,0));
+        //my_antennas.add(new ARCoord("my",21.5,42.54,0));
+        //my_antennas.add(new ARCoord("name",14.25,42.54,0));
+        //my_antennas.add(new ARCoord("is",44.25,42.54,0));
+        //my_antennas.add(new ARCoord("what",32.25,42.54,0));
         /////////////////////END///////////////////////////////////////
         mapFragment.getMapAsync(this);
     }
@@ -160,8 +162,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 if(my_last_known_loc!=null){
                     if(last_loc_antennas_updated==null){
                         last_loc_antennas_updated=my_last_known_loc;
+                        LatLng last=my_last_known_loc.getPosition();
+                        Double my_lat=last.latitude;
+                        Double my_long=last.longitude;
+                        String my_latstr=my_lat.toString();
+                        String my_longstr=my_long.toString();
+                        DatabaseAccess databaseAccess = DatabaseAccess.getInstance(my_context);
+                        databaseAccess.open();
+                        //my_antennas= databaseAccess.getAntennasWithinRadius(my_latstr,my_longstr,"20");
+                        my_antennas= databaseAccess.getAllCellCoords();
+                        databaseAccess.close();
                         int i=0;
-                        while(i<5){
+                        while(i<my_antennas.size()){
                             try {
                                 ARCoord antenna_coord=my_antennas.get(i);
                                 Location antenna_loc=antenna_coord.getLocation();
@@ -184,8 +196,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                             last_loc_antennas_updated=my_last_known_loc;
                             mMap.moveCamera(CameraUpdateFactory.newLatLng(last));
                             updateCamera(bearing);
+                            Double my_lat=last.latitude;
+                            Double my_long=last.longitude;
+                            String my_latstr=my_lat.toString();
+                            String my_longstr=my_long.toString();
+                            DatabaseAccess databaseAccess = DatabaseAccess.getInstance(my_context);
+                            databaseAccess.open();
+                            //my_antennas= databaseAccess.getAntennasWithinRadius(my_latstr,my_longstr,"20");
+                            my_antennas= databaseAccess.getAllCellCoords();
+                            databaseAccess.close();
                             int i=0;
-                            while(i<5){
+                            while(i<my_antennas.size()){
                                 try {
                                     ARCoord antenna_coord=my_antennas.get(i);
                                     Location antenna_loc=antenna_coord.getLocation();
