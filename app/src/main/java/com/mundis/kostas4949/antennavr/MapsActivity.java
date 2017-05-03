@@ -13,6 +13,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.opengl.Matrix;
+import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -25,11 +26,20 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.ArrayList;
+
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, SensorEventListener {
+    final int MARKER_UPDATE_INTERVAL = 2000; /* milliseconds */
+    Handler my_handler = new Handler();
+    private Marker my_last_known_loc,last_loc_antennas_updated;
+
     private Toolbar my_toolbar;
     private GoogleMap mMap=null;
     boolean gps_enabled = false;
@@ -47,6 +57,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private float[] rotation_matrix;
     private GeomagneticField field;
     private float mDeclination,bearing;
+    ArrayList<ARCoord> my_antennas;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +91,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         setSupportActionBar(my_toolbar);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
+
+        //////////////////////////FROM DATABASE///////////////////////////
+        //DatabaseAccess databaseAccess = DatabaseAccess.getInstance(this);
+        //databaseAccess.open();
+        //my_antennas= databaseAccess.getAllCellCoords();
+        //databaseAccess.close();
+        ////////////////////////MANUAL////////////////////////////////////
+        my_antennas=new ArrayList<>();
+        my_antennas.add(new ARCoord("coconut",24.25,42.54,0));
+        my_antennas.add(new ARCoord("my",21.5,42.54,0));
+        my_antennas.add(new ARCoord("name",14.25,42.54,0));
+        my_antennas.add(new ARCoord("is",44.25,42.54,0));
+        my_antennas.add(new ARCoord("what",32.25,42.54,0));
+        /////////////////////END///////////////////////////////////////
         mapFragment.getMapAsync(this);
     }
 
@@ -128,6 +153,56 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
+    Runnable updateMarker = new Runnable() {
+        @Override
+        public void run() {
+            if(my_antennas!=null && !my_antennas.isEmpty()) {
+                if(my_last_known_loc!=null){
+                    if(last_loc_antennas_updated==null){
+                        last_loc_antennas_updated=my_last_known_loc;
+                        int i=0;
+                        while(i<5){
+                            try {
+                                ARCoord antenna_coord=my_antennas.get(i);
+                                Location antenna_loc=antenna_coord.getLocation();
+                                LatLng my_latlng=new LatLng(antenna_loc.getLatitude(),antenna_loc.getLongitude());
+                                BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher_roundantenna);
+                                mMap.addMarker(new MarkerOptions().position(my_latlng).icon(icon));
+                            }catch(IndexOutOfBoundsException e){
+                                break;
+                            }
+                            i++;
+                        }
+                    }
+                    else{
+                        LatLng last=my_last_known_loc.getPosition();
+                        LatLng updated=last_loc_antennas_updated.getPosition();
+                        if(((last.latitude > updated.latitude+0.01) || (last.latitude<updated.latitude-0.01))&&((last.longitude>
+                        updated.longitude+0.01)||(last.longitude<updated.longitude-0.01))){
+                            mMap.clear();
+                            my_last_known_loc=mMap.addMarker(new MarkerOptions().position(last).title("You are here!"));
+                            last_loc_antennas_updated=my_last_known_loc;
+                            mMap.moveCamera(CameraUpdateFactory.newLatLng(last));
+                            updateCamera(bearing);
+                            int i=0;
+                            while(i<5){
+                                try {
+                                    ARCoord antenna_coord=my_antennas.get(i);
+                                    Location antenna_loc=antenna_coord.getLocation();
+                                    LatLng my_latlng=new LatLng(antenna_loc.getLatitude(),antenna_loc.getLongitude());
+                                    mMap.addMarker(new MarkerOptions().position(my_latlng));
+                                }catch(IndexOutOfBoundsException e){
+                                    break;
+                                }
+                                i++;
+                            }
+                        }
+                    }
+                }
+            }
+            my_handler.postDelayed(this, MARKER_UPDATE_INTERVAL);
+        }
+    };
 
     /**
      * Manipulates the map once available.
@@ -141,13 +216,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
+        my_handler.postDelayed(updateMarker,0);
         // Add a marker in Sydney and move the camera
         //LatLng myloc = new LatLng(x, y);
         //mMap.addMarker(new MarkerOptions().position(myloc).title("You are here!"));
         //mMap.moveCamera(CameraUpdateFactory.newLatLng(myloc));
         //updateCameraBearing(mMap,rotation_matrix);
     }
+
+    @Override
+    protected void onDestroy() {
+        my_handler.removeCallbacks(updateMarker);
+
+        super.onDestroy();
+    }
+
+
     ////////////////////////////////////////////////////////////
 
     private void updateCameraBearing(GoogleMap googleMap, float bearing) {
@@ -265,11 +349,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Toast.makeText(getApplicationContext(), "Calculating Position!", Toast.LENGTH_SHORT).show();
             }
             if(mMap!=null){
-            mMap.clear();
-            LatLng myloc = new LatLng(x, y);
-            mMap.addMarker(new MarkerOptions().position(myloc).title("You are here!"));
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(myloc));
-            updateCamera(bearing);
+                if(my_last_known_loc!=null){
+                    my_last_known_loc.remove();
+                }
+                LatLng myloc = new LatLng(x, y);
+                my_last_known_loc=mMap.addMarker(new MarkerOptions().position(myloc).title("You are here!"));
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(myloc));
+                updateCamera(bearing);
             }
             else{
                 System.out.println("mMap NULLERINO");
