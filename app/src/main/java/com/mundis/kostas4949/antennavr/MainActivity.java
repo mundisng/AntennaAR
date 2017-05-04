@@ -67,6 +67,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+
+
         setContentView(R.layout.activity_main);
         //arOverlayView = new AROverlayView(this); tha xreiastei sto mellon gia tis koukides sthn kamera
         mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
@@ -115,6 +117,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
         arOverlay = new AROverlay(this);
+        //arOverlay.updateCurrentLocation(35.188726,25.718366);
     }
 
     @Override
