@@ -5,6 +5,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.PointF;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import java.util.ArrayList;
 
 /**
@@ -50,9 +52,7 @@ public class DatabaseAccess {
         return coordlist;
     }
 
-    public static ArrayList<Double> calculateDerivedPosition(double x,double y,
-                                                  double range, double bearing)
-    {
+    public LatLng calculateDerivedPosition(double x, double y, double range, double bearing) {
         double EarthRadius = 6371000; // m
 
         double latA = Math.toRadians(x);
@@ -74,12 +74,8 @@ public class DatabaseAccess {
 
         lat = Math.toDegrees(lat);
         lon = Math.toDegrees(lon);
-
-        ArrayList<Double> newPoint=new ArrayList<>();
-        //PointF newPoint = new PointF((float) lat, (float) lon);
-        newPoint.add(lat);
-        newPoint.add(lon);
-        return newPoint;
+        LatLng my_point=new LatLng(lat,lon);
+        return my_point;
 
     }
 
@@ -88,13 +84,13 @@ public class DatabaseAccess {
         //System.out.println("DOUBLE: x: "+x+" y: "+y+"     FLOAT: x: "+(float)x+" y: "+(float)y);
         //PointF center = new PointF((float)x,(float) y);
         final double mult = 1.1;
-        ArrayList<Double> p1 = calculateDerivedPosition(x,y, mult * radius, 0);
-        ArrayList<Double> p2 = calculateDerivedPosition(x,y, mult * radius, 90);
-        ArrayList<Double> p3 = calculateDerivedPosition(x,y, mult * radius, 180);
-        ArrayList<Double> p4 = calculateDerivedPosition(x,y, mult * radius, 270);
-        String stuff[]={String.valueOf(p1.get(0)),String.valueOf(p3.get(0)),String.valueOf(p2.get(1)),String.valueOf(p4.get(1))};
+        LatLng p1 = calculateDerivedPosition(x,y, mult * radius, 0);
+        LatLng p2 = calculateDerivedPosition(x,y, mult * radius, 90);
+        LatLng p3 = calculateDerivedPosition(x,y, mult * radius, 180);
+        LatLng p4 = calculateDerivedPosition(x,y, mult * radius, 270);
+        String stuff[]={String.valueOf(p1.latitude),String.valueOf(p3.latitude),String.valueOf(p2.longitude),String.valueOf(p4.longitude)};
         System.out.println("Current coordinates: "+x+" "+y);
-   System.out.println("SELECT cell,lat,lon FROM cell_towers_greece WHERE lat<"+String.valueOf(p1.get(0))+" AND lat>"+String.valueOf(p3.get(0))+" AND lon<"+String.valueOf(p2.get(1))+" AND lon>"+String.valueOf(p4.get(1)));
+   System.out.println("SELECT cell,lat,lon FROM cell_towers_greece WHERE lat<"+String.valueOf(p1.latitude)+" AND lat>"+String.valueOf(p3.latitude)+" AND lon<"+String.valueOf(p2.longitude)+" AND lon>"+String.valueOf(p4.longitude));
         Cursor cursor=database.rawQuery("SELECT cell,lat,lon FROM cell_towers_greece WHERE lat<? AND lat>? AND lon<? AND lon>?",stuff);
       //  Cursor cursor=database.rawQuery("SELECT cell,lat,lon FROM cell_towers_greece a WHERE (acos(sin(a.lat * 0.0175)" +
         //                "* sin(? * 0.0175)+ cos(a.lat * 0.0175) * cos(? * 0.0175) *"
@@ -102,16 +98,18 @@ public class DatabaseAccess {
         cursor.moveToFirst();
         double R=6371000;
         while (!cursor.isAfterLast()){
-            double dLat=Math.toRadians(x-Double.parseDouble(cursor.getString(1)));
-            double dLon=Math.toRadians(y-Double.parseDouble(cursor.getString(2)));
-            double lat1=Math.toRadians(Double.parseDouble(cursor.getString(1)));
+            double lat0=Double.parseDouble(cursor.getString(1));
+            double lon0=Double.parseDouble(cursor.getString(2));
+            double dLat=Math.toRadians(x-lat0);
+            double dLon=Math.toRadians(y-lon0);
+            double lat1=Math.toRadians(lat0);
             double lat2=Math.toRadians(x);
             double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(dLon / 2)
                     * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
             double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
             double d = R * c;
             if (d<=radius) {
-                coordlist.add(new ARCoord(cursor.getString(0), Double.parseDouble(cursor.getString(1)), Double.parseDouble(cursor.getString(2)), 30.0));
+                coordlist.add(new ARCoord(cursor.getString(0), lat0, lon0, 30.0));
                 System.out.println("RADIUS: "+coordlist.get(0).getName()+" "+ coordlist.get(0).getLocation().getLatitude()+ " "+ coordlist.get(0).getLocation().getLongitude());
             }
                 cursor.moveToNext();
