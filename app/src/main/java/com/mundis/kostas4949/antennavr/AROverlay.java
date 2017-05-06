@@ -1,13 +1,20 @@
 package com.mundis.kostas4949.antennavr;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.opengl.Matrix;
 import android.view.View;
+
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,13 +29,17 @@ public class AROverlay extends View {
     private Location currentLocation;
     private List<ARCoord> arPoints;
     ArrayList<ARCoord> heya;
+    private double my_radius;
+    private Bitmap my_bitmap;
 
 
-    public AROverlay(Context context) {
+    public AROverlay(Context context,double my_radius) {
         super(context);
 
         this.context = context;
-
+        this.my_radius=my_radius;
+        Resources res = getResources();
+        my_bitmap = BitmapFactory.decodeResource(res, R.mipmap.ic_launcher_roundantenna);
         //Demo points
         System.out.println("We got in AROverlay");
        // if (!global.alreadycached) {
@@ -60,7 +71,7 @@ public class AROverlay extends View {
         DatabaseAccess databaseAccess = DatabaseAccess.getInstance(this.context);  //kane comment oles aytes tis grammes ama sou kollaei to kinhto
       //  System.out.println("Opening database!");
         databaseAccess.open();
-        arPoints = databaseAccess.getAntennasWithinRadius(this.currentLocation.getLatitude(),this.currentLocation.getLongitude(),30);
+        arPoints = databaseAccess.getAntennasWithinRadius(this.currentLocation.getLatitude(),this.currentLocation.getLongitude(),my_radius);
        // System.out.println("Got all data!");
         databaseAccess.close();
        // System.out.println("Closed database!");
@@ -73,7 +84,7 @@ public class AROverlay extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         //System.out.println("We got in here!");
-          if (currentLocation == null) {
+          if (currentLocation == null || arPoints==null || arPoints.isEmpty()) {
         //System.out.println("Current location is null?");
             return;
          }
@@ -103,7 +114,8 @@ public class AROverlay extends View {
          float x  = (0.5f + cameraCoordinateVector[0]/cameraCoordinateVector[3]) * canvas.getWidth();
          float y = (0.5f - cameraCoordinateVector[1]/cameraCoordinateVector[3]) * canvas.getHeight();
         // System.out.println("DRAWING: X: "+x+" Y: "+y);
-        canvas.drawCircle(x, y, radius, paint);
+        //canvas.drawCircle(x, y, radius, paint);
+            canvas.drawBitmap(my_bitmap,x,y,paint);
          canvas.drawText(arPoints.get(i).getName(), x - (30 * arPoints.get(i).getName().length() / 2), y - 80, paint);
          }
         }

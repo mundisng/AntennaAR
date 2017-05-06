@@ -19,6 +19,7 @@ import android.location.LocationManager;
 import android.opengl.Matrix;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -70,6 +71,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
         setContentView(R.layout.activity_main);
+        SharedPreferences my_sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        String radiusstr = my_sharedPref.getString("pref_radius", "10");
+        arOverlay = new AROverlay(this,Double.parseDouble(radiusstr));
+
         //arOverlayView = new AROverlayView(this); tha xreiastei sto mellon gia tis koukides sthn kamera
         mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
         List<Sensor> sensors = mSensorManager.getSensorList(Sensor.TYPE_ALL);
@@ -114,9 +119,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         } catch (SecurityException e) {
             coords.setText("Can't get gps location(security exception). Check your settings!");
         }
-
-
-        arOverlay = new AROverlay(this);
         //arOverlay.updateCurrentLocation(35.188726,25.718366);
     }
 
