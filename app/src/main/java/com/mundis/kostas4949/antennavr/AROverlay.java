@@ -30,14 +30,16 @@ public class AROverlay extends View {
     private List<ARCoord> arPoints;
     ArrayList<ARCoord> heya;
     private double my_radius;
+    private int antenum;
     private Bitmap my_bitmap;
 
 
-    public AROverlay(Context context,double my_radius) {
+    public AROverlay(Context context,double my_radius,int antenum) {
         super(context);
 
         this.context = context;
         this.my_radius=my_radius;
+        this.antenum=antenum;
         Resources res = getResources();
         my_bitmap = BitmapFactory.decodeResource(res, R.mipmap.ic_launcher_roundantenna);
         //Demo points
@@ -71,7 +73,7 @@ public class AROverlay extends View {
         DatabaseAccess databaseAccess = DatabaseAccess.getInstance(this.context);  //kane comment oles aytes tis grammes ama sou kollaei to kinhto
       //  System.out.println("Opening database!");
         databaseAccess.open();
-        arPoints = databaseAccess.getAntennasWithinRadius(this.currentLocation.getLatitude(),this.currentLocation.getLongitude(),my_radius);
+        arPoints = databaseAccess.getAntennasWithinRadius(this.currentLocation.getLatitude(),this.currentLocation.getLongitude(),my_radius,antenum);
        // System.out.println("Got all data!");
         databaseAccess.close();
        // System.out.println("Closed database!");

@@ -181,7 +181,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 Location antenna_loc = antenna_coord.getLocation();
                                 LatLng my_latlng = new LatLng(antenna_loc.getLatitude(), antenna_loc.getLongitude());
                                 BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher_roundantenna);
-                                mMap.addMarker(new MarkerOptions().position(my_latlng).icon(icon));
+                                mMap.addMarker(new MarkerOptions().position(my_latlng).icon(icon).title(antenna_coord.getName()));
                             } catch (IndexOutOfBoundsException e) {
                                 break;
                             }
@@ -213,7 +213,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     Location antenna_loc = antenna_coord.getLocation();
                                     LatLng my_latlng = new LatLng(antenna_loc.getLatitude(), antenna_loc.getLongitude());
                                     BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher_roundantenna);
-                                    mMap.addMarker(new MarkerOptions().position(my_latlng).icon(icon));
+                                    mMap.addMarker(new MarkerOptions().position(my_latlng).icon(icon).title(antenna_coord.getName()));
                                 } catch (IndexOutOfBoundsException e) {
                                     break;
                                 }

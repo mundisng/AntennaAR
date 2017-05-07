@@ -5,7 +5,7 @@
         android:title="@string/pref_antenum"
         android:summary="@string/pref_antenum_summ"
         android:numeric="integer"
-        android:defaultValue="1" />
+        android:defaultValue="5" />
     <EditTextPreference
         android:key="pref_radius"
         android:title="@string/pref_radius"

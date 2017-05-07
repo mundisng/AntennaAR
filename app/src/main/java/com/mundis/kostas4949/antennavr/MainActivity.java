@@ -73,7 +73,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setContentView(R.layout.activity_main);
         SharedPreferences my_sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         String radiusstr = my_sharedPref.getString("pref_radius", "10");
-        arOverlay = new AROverlay(this,Double.parseDouble(radiusstr));
+        String antenumstr=my_sharedPref.getString("pref_antenum","5");
+        arOverlay = new AROverlay(this,Double.parseDouble(radiusstr),Integer.parseInt(antenumstr));
 
         //arOverlayView = new AROverlayView(this); tha xreiastei sto mellon gia tis koukides sthn kamera
         mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);

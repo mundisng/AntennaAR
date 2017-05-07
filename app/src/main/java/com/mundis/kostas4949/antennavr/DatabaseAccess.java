@@ -78,6 +78,45 @@ public class DatabaseAccess {
         return my_point;
 
     }
+    public ArrayList<ARCoord> getAntennasWithinRadius(double x,double y,double radius,int antenum){
+        ArrayList<ARCoord> coordlist=new ArrayList<>();
+        final double mult = 1.1;
+        LatLng p1 = calculateDerivedPosition(x,y, mult * radius, 0);
+        LatLng p2 = calculateDerivedPosition(x,y, mult * radius, 90);
+        LatLng p3 = calculateDerivedPosition(x,y, mult * radius, 180);
+        LatLng p4 = calculateDerivedPosition(x,y, mult * radius, 270);
+        System.out.println("Current coordinates: "+x+" "+y);
+        double fudge = Math.pow(Math.cos(Math.toRadians(x)),2);
+        String stuff[]={String.valueOf(p1.latitude),String.valueOf(p3.latitude),String.valueOf(p2.longitude),String.valueOf(p4.longitude),
+                String.valueOf(x),String.valueOf(x),String.valueOf(y),String.valueOf(y),String.valueOf(fudge)};
+        System.out.println("SELECT cell,lat,lon FROM cell_towers_greece WHERE lat<"+String.valueOf(p1.latitude)+" AND lat>"+String.valueOf(p3.latitude)+" AND lon<"+String.valueOf(p2.longitude)+" AND lon>"+String.valueOf(p4.longitude));
+        Cursor cursor=database.rawQuery("SELECT cell,lat,lon FROM cell_towers_greece WHERE lat<? AND lat>? AND lon<? AND lon>? ORDER BY ((? - lat) * (? - lat) +" +
+                "(? - lon) * (? - lon) * ?)",stuff);
+        cursor.moveToFirst();
+        double R=6371000;
+        int ante_counter=0;
+        while ((!cursor.isAfterLast()) && (ante_counter<antenum)){
+            double lat0=Double.parseDouble(cursor.getString(1));
+            double lon0=Double.parseDouble(cursor.getString(2));
+            double dLat=Math.toRadians(x-lat0);
+            double dLon=Math.toRadians(y-lon0);
+            double lat1=Math.toRadians(lat0);
+            double lat2=Math.toRadians(x);
+            double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(dLon / 2)
+                    * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+            double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            double d = R * c;
+            if (d<=radius) {
+                ante_counter++;
+                coordlist.add(new ARCoord(cursor.getString(0), lat0, lon0, 30.0));
+                System.out.println("RADIUS: "+coordlist.get(0).getName()+" "+ coordlist.get(0).getLocation().getLatitude()+ " "+ coordlist.get(0).getLocation().getLongitude());
+            }
+            cursor.moveToNext();
+        }
+
+        cursor.close();
+        return coordlist;
+    }
 
     public ArrayList<ARCoord> getAntennasWithinRadius(double x,double y,double radius){
         ArrayList<ARCoord> coordlist=new ArrayList<>();
