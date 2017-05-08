@@ -25,4 +25,6 @@ public class ARCoord {
     public String getName() {
         return name;
     }
+
+
 }

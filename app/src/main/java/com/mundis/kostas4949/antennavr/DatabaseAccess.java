@@ -89,15 +89,16 @@ public class DatabaseAccess {
         double fudge = Math.pow(Math.cos(Math.toRadians(x)),2);
         String stuff[]={String.valueOf(p1.latitude),String.valueOf(p3.latitude),String.valueOf(p2.longitude),String.valueOf(p4.longitude),
                 String.valueOf(x),String.valueOf(x),String.valueOf(y),String.valueOf(y),String.valueOf(fudge)};
-        System.out.println("SELECT cell,lat,lon FROM cell_towers_greece WHERE lat<"+String.valueOf(p1.latitude)+" AND lat>"+String.valueOf(p3.latitude)+" AND lon<"+String.valueOf(p2.longitude)+" AND lon>"+String.valueOf(p4.longitude));
-        Cursor cursor=database.rawQuery("SELECT cell,lat,lon FROM cell_towers_greece WHERE lat<? AND lat>? AND lon<? AND lon>? ORDER BY ((? - lat) * (? - lat) +" +
-                "(? - lon) * (? - lon) * ?)",stuff);
+        System.out.println("SELECT cell,latitude,longitude,altitude FROM cell_towers_greece WHERE latitude<"+String.valueOf(p1.latitude)+" AND latitude>"+String.valueOf(p3.latitude)+" AND longitude<"+String.valueOf(p2.longitude)+" AND longitude>"+String.valueOf(p4.longitude));
+        Cursor cursor=database.rawQuery("SELECT cell,latitude,longitude,altitude FROM cell_towers_greece WHERE latitude<? AND latitude>? AND longitude<? AND longitude>? ORDER BY ((? - latitude) * (? - latitude) +" +
+                "(? - longitude) * (? - longitude) * ?)",stuff);
         cursor.moveToFirst();
         double R=6371000;
         int ante_counter=0;
         while ((!cursor.isAfterLast()) && (ante_counter<antenum)){
-            double lat0=Double.parseDouble(cursor.getString(1));
-            double lon0=Double.parseDouble(cursor.getString(2));
+            System.out.println("Got cell: "+cursor.getString(0));
+            double lat0=cursor.getDouble(1);
+            double lon0=cursor.getDouble(2);
             double dLat=Math.toRadians(x-lat0);
             double dLon=Math.toRadians(y-lon0);
             double lat1=Math.toRadians(lat0);
@@ -108,8 +109,8 @@ public class DatabaseAccess {
             double d = R * c;
             if (d<=radius) {
                 ante_counter++;
-                coordlist.add(new ARCoord(cursor.getString(0), lat0, lon0, 30.0));
-                System.out.println("RADIUS: "+coordlist.get(0).getName()+" "+ coordlist.get(0).getLocation().getLatitude()+ " "+ coordlist.get(0).getLocation().getLongitude());
+                coordlist.add(new ARCoord(cursor.getString(0), lat0, lon0, cursor.getDouble(3)));
+                System.out.println("RADIUS: "+coordlist.get(ante_counter-1).getName()+" "+ coordlist.get(ante_counter-1).getLocation().getLatitude()+ " "+ coordlist.get(ante_counter-1).getLocation().getLongitude()+" "+coordlist.get(ante_counter-1).getLocation().getAltitude());
             }
             cursor.moveToNext();
         }
@@ -129,16 +130,16 @@ public class DatabaseAccess {
         LatLng p4 = calculateDerivedPosition(x,y, mult * radius, 270);
         String stuff[]={String.valueOf(p1.latitude),String.valueOf(p3.latitude),String.valueOf(p2.longitude),String.valueOf(p4.longitude)};
         System.out.println("Current coordinates: "+x+" "+y);
-   System.out.println("SELECT cell,lat,lon FROM cell_towers_greece WHERE lat<"+String.valueOf(p1.latitude)+" AND lat>"+String.valueOf(p3.latitude)+" AND lon<"+String.valueOf(p2.longitude)+" AND lon>"+String.valueOf(p4.longitude));
-        Cursor cursor=database.rawQuery("SELECT cell,lat,lon FROM cell_towers_greece WHERE lat<? AND lat>? AND lon<? AND lon>?",stuff);
+   System.out.println("SELECT cell,latitude,longitude,altitude FROM cell_towers_greece WHERE latitude<"+String.valueOf(p1.latitude)+" AND latitude>"+String.valueOf(p3.latitude)+" AND longitude<"+String.valueOf(p2.longitude)+" AND longitude>"+String.valueOf(p4.longitude));
+        Cursor cursor=database.rawQuery("SELECT cell,latitude,longitude,altitude FROM cell_towers_greece WHERE latitude<? AND latitude>? AND longitude<? AND longitude>?",stuff);
       //  Cursor cursor=database.rawQuery("SELECT cell,lat,lon FROM cell_towers_greece a WHERE (acos(sin(a.lat * 0.0175)" +
         //                "* sin(? * 0.0175)+ cos(a.lat * 0.0175) * cos(? * 0.0175) *"
         //        +"cos((? * 0.0175) - (a.lon * 0.0175))) * 6371 <= ?) ",stuff);  //6371 for km, 3959 for miles
         cursor.moveToFirst();
         double R=6371000;
         while (!cursor.isAfterLast()){
-            double lat0=Double.parseDouble(cursor.getString(1));
-            double lon0=Double.parseDouble(cursor.getString(2));
+            double lat0=cursor.getDouble(1);
+            double lon0=cursor.getDouble(2);
             double dLat=Math.toRadians(x-lat0);
             double dLon=Math.toRadians(y-lon0);
             double lat1=Math.toRadians(lat0);
@@ -148,8 +149,8 @@ public class DatabaseAccess {
             double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
             double d = R * c;
             if (d<=radius) {
-                coordlist.add(new ARCoord(cursor.getString(0), lat0, lon0, 30.0));
-                System.out.println("RADIUS: "+coordlist.get(0).getName()+" "+ coordlist.get(0).getLocation().getLatitude()+ " "+ coordlist.get(0).getLocation().getLongitude());
+                coordlist.add(new ARCoord(cursor.getString(0), lat0, lon0, cursor.getDouble(3)));
+                System.out.println("RADIUS: "+coordlist.get(0).getName()+" "+ coordlist.get(0).getLocation().getLatitude()+ " "+ coordlist.get(0).getLocation().getLongitude()+" "+coordlist.get(0).getLocation().getAltitude());
             }
                 cursor.moveToNext();
         }

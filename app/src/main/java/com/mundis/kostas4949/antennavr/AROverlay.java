@@ -71,10 +71,10 @@ public class AROverlay extends View {
     public void updateCurrentLocation(Location currentLocation){
         this.currentLocation = currentLocation;
         DatabaseAccess databaseAccess = DatabaseAccess.getInstance(this.context);  //kane comment oles aytes tis grammes ama sou kollaei to kinhto
-      //  System.out.println("Opening database!");
+        System.out.println("Opening database!");
         databaseAccess.open();
         arPoints = databaseAccess.getAntennasWithinRadius(this.currentLocation.getLatitude(),this.currentLocation.getLongitude(),my_radius,antenum);
-       // System.out.println("Got all data!");
+        System.out.println("Got all data!");
         databaseAccess.close();
        // System.out.println("Closed database!");
         System.out.println("Got "+arPoints.size()+" points.");
@@ -121,5 +121,6 @@ public class AROverlay extends View {
          canvas.drawText(arPoints.get(i).getName(), x - (30 * arPoints.get(i).getName().length() / 2), y - 80, paint);
          }
         }
+
     }
 }
