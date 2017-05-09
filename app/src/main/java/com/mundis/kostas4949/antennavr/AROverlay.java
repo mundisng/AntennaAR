@@ -32,6 +32,7 @@ public class AROverlay extends View {
     private double my_radius;
     private int antenum;
     private Bitmap my_bitmap;
+    DatabaseAccess databaseAccess;
 
 
     public AROverlay(Context context,double my_radius,int antenum) {
@@ -44,6 +45,10 @@ public class AROverlay extends View {
         my_bitmap = BitmapFactory.decodeResource(res, R.mipmap.ic_launcher_roundantenna);
         //Demo points
         System.out.println("We got in AROverlay");
+        databaseAccess = DatabaseAccess.getInstance(this.context);  //kane comment oles aytes tis grammes ama sou kollaei to kinhto
+       System.out.println("Opening database!");
+        databaseAccess.open();
+
        // if (!global.alreadycached) {
           //  DatabaseAccess databaseAccess = DatabaseAccess.getInstance(this.context);  //kane comment oles aytes tis grammes ama sou kollaei to kinhto
           //  System.out.println("Opening database!");
@@ -63,6 +68,15 @@ public class AROverlay extends View {
        // }};
     }
 
+    public void openDB(){
+      //  databaseAccess = DatabaseAccess.getInstance(this.context);  //kane comment oles aytes tis grammes ama sou kollaei to kinhto
+       // System.out.println("Opening database!");
+       // databaseAccess.open();
+    }
+
+    public void closeDB(){
+       // databaseAccess.close();
+    }
     public void updateRotatedProjectionMatrix(float[] rotatedProjectionMatrix) {
         this.rotatedProjectionMatrix = rotatedProjectionMatrix;
         this.invalidate();
@@ -70,9 +84,10 @@ public class AROverlay extends View {
 
     public void updateCurrentLocation(Location currentLocation){
         this.currentLocation = currentLocation;
-        DatabaseAccess databaseAccess = DatabaseAccess.getInstance(this.context);  //kane comment oles aytes tis grammes ama sou kollaei to kinhto
-        System.out.println("Opening database!");
-        databaseAccess.open();
+        //DatabaseAccess databaseAccess = DatabaseAccess.getInstance(this.context);  //kane comment oles aytes tis grammes ama sou kollaei to kinhto
+       // System.out.println("Opening database!");
+        //databaseAccess.open();
+        databaseAccess = DatabaseAccess.getInstance(this.context);
         if(my_radius>0 && antenum>0){
             arPoints = databaseAccess.getAntennasWithinRadius(this.currentLocation.getLatitude(),this.currentLocation.getLongitude(),my_radius,antenum);
         }
@@ -83,7 +98,7 @@ public class AROverlay extends View {
             arPoints=null;
         }
         System.out.println("Got all data!");
-        databaseAccess.close();
+        //databaseAccess.close();
        // System.out.println("Closed database!");
         System.out.println("Got "+arPoints.size()+" points.");
         //System.out.println("Got location as:"+currentLocation.getLatitude()+" "+currentLocation.getLongitude());

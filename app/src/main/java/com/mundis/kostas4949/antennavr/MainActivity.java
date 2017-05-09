@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     TextView coords;//compa;
     private long my_minTime;
     private float my_minDistance;
+    DatabaseAccess databaseAccess;
 
     private final static int REQUEST_CAMERA_PERMISSIONS_CODE = 11;
     Intent in;
@@ -68,6 +69,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         my_minDistance=Float.parseFloat(minDistancestr);
         System.out.println("radius="+radiusstr+" ,antenum="+antenumstr+", minTime="+my_minTime+", my_minDistance="+my_minDistance);
         arOverlay = new AROverlay(this,Double.parseDouble(radiusstr),Integer.parseInt(antenumstr));
+       // databaseAccess = DatabaseAccess.getInstance(this);
+       // System.out.println("Opening database!");
+       // databaseAccess.open();
+        //arOverlay.openDB();
         //arOverlay = new AROverlay(this,Double.parseDouble(radiusstr),antenum);
         mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
         List<Sensor> sensors = mSensorManager.getSensorList(Sensor.TYPE_ALL);
@@ -104,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, my_minTime, my_minDistance,
                     locationListenerGps);
         } catch (SecurityException e) {
-            coords.setText("Can't get gps location(security exception). Check your settings!");
+            coords.setText("Can't get gps location. Check app permissions!");
         }
     }
 
@@ -153,6 +158,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onResume() {
         super.onResume();
         initAROverlay();
+       // System.out.println("We are trying to open the database!");
+        //arOverlay.openDB();
+       // System.out.println("We just opened the database!");
         requestCameraPermission();
         if (!rotation_compatibility) {
             mSensorManager.registerListener(this, mCompass, SensorManager.SENSOR_DELAY_FASTEST);
@@ -169,8 +177,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onPause() {
         super.onPause();
-        releaseCamera(); //prepei na kanei release thn kamera otan einai se pause, to sygkekrimeno einai akoma buggy
         mSensorManager.unregisterListener(this);
+       // System.out.println("We are trying to close the database!");
+        //arOverlay.closeDB();
+       // System.out.println("We just closed the database!");
+        releaseCamera(); //prepei na kanei release thn kamera otan einai se pause, to sygkekrimeno einai akoma buggy
+
     }
 
     public void initAROverlay() {
@@ -295,7 +307,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 x = location.getLatitude();
                 y = location.getLongitude();
                 z=location.getAltitude();
-                coords.setText("location (gps) : " + x + " " + y+"and altitude: "+z);
+                coords.setText("location (gps) : " + x + " " + y);
 
             }
             else {
