@@ -76,15 +76,8 @@ public class AROverlay extends View {
         if(my_radius>0 && antenum>0){
             arPoints = databaseAccess.getAntennasWithinRadius(this.currentLocation.getLatitude(),this.currentLocation.getLongitude(),my_radius,antenum);
         }
-        else if(my_radius<0 && antenum<0){
-            arPoints=databaseAccess.getAllCellCoords();
-        }
-        else if(antenum<0 && my_radius>0){
-            arPoints=databaseAccess.getAntennasWithinRadius(this.currentLocation.getLatitude(),this.currentLocation.getLongitude(),my_radius);
-        }
-        else if(my_radius<0 && antenum>0){
-            //maximum antennas is just limit, not ordered
-            arPoints=databaseAccess.getMaximumAntennas(this.currentLocation.getLatitude(),this.currentLocation.getLongitude(),antenum);
+        else if(my_radius>0 && antenum==0){
+            arPoints = databaseAccess.getAntennasWithinRadius(this.currentLocation.getLatitude(),this.currentLocation.getLongitude(),my_radius);
         }
         else{
             arPoints=null;

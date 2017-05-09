@@ -28,6 +28,8 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -59,9 +61,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private float mDeclination,bearing;
     ArrayList<ARCoord> my_antennas;
     private double my_radius;
-    private int antenum;
     private long my_minTime;
     private float my_minDistance;
+    private Circle my_last_circle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,10 +72,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(R.layout.activity_maps);
         SharedPreferences my_sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         String radiusstr = my_sharedPref.getString("pref_radius", "50");
-        antenum=my_sharedPref.getInt("pref_antenum",5);
-        my_minTime=my_sharedPref.getLong("pref_minTime",50);
-        my_minDistance=my_sharedPref.getFloat("pref_minDistance",1);
+        String minTimestr = my_sharedPref.getString("pref_minTime", "50");
+        String minDistancestr=my_sharedPref.getString("pref_minDistance","1");
+        my_minTime=Long.parseLong(minTimestr);
+        my_minDistance=Float.parseFloat(minDistancestr);
+        //my_minTime=my_sharedPref.getLong("pref_minTime",50);
+        //my_minDistance=my_sharedPref.getFloat("pref_minDistance",1);
         my_radius=Double.parseDouble(radiusstr);
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         //////////////////////////////////////////////////
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
@@ -200,6 +206,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         updated.longitude+0.01)||(last.longitude<updated.longitude-0.01))){
                         mMap.clear();
                         my_last_known_loc=mMap.addMarker(new MarkerOptions().position(last).title("You are here!"));
+                        my_last_circle=mMap.addCircle(new CircleOptions().center(last).radius(my_radius).strokeWidth(0f).fillColor(0x550000FF));
                         last_loc_antennas_updated=my_last_known_loc;
                         mMap.moveCamera(CameraUpdateFactory.newLatLng(last));
                         updateCamera(bearing);
@@ -378,9 +385,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             if(mMap!=null){
                 if(my_last_known_loc!=null){
                     my_last_known_loc.remove();
+                    if(my_last_circle!=null){
+                        my_last_circle.remove();
+                    }
+
                 }
                 LatLng myloc = new LatLng(x, y);
                 my_last_known_loc=mMap.addMarker(new MarkerOptions().position(myloc).title("You are here!"));
+                my_last_circle=mMap.addCircle(new CircleOptions().center(new LatLng(x,y)).radius(my_radius).strokeWidth(0f).fillColor(0x550000FF));
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(myloc));
                 updateCamera(bearing);
             }
