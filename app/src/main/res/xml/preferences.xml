@@ -4,12 +4,24 @@
         android:key="pref_antenum"
         android:title="@string/pref_antenum"
         android:summary="@string/pref_antenum_summ"
-        android:numeric="integer"
+        android:inputType="numberSigned"
         android:defaultValue="5" />
     <EditTextPreference
         android:key="pref_radius"
         android:title="@string/pref_radius"
         android:summary="@string/pref_radius_summ"
-        android:numeric="decimal"
-        android:defaultValue="10" />
+        android:inputType="numberDecimal|numberSigned"
+        android:defaultValue="50" />
+    <EditTextPreference
+        android:key="pref_minTime"
+        android:title="@string/pref_minTime"
+        android:summary="@string/pref_minTime_summ"
+        android:inputType="number"
+        android:defaultValue="50" />
+    <EditTextPreference
+        android:key="pref_minDistance"
+        android:title="@string/pref_minDistance"
+        android:summary="@string/pref_minDistance_summ"
+        android:inputType="numberDecimal"
+        android:defaultValue="1" />
 </PreferenceScreen>

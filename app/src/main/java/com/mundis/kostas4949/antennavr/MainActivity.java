@@ -1,7 +1,6 @@
 package com.mundis.kostas4949.antennavr;
 
 import android.Manifest;
-import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -12,7 +11,6 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -32,13 +30,7 @@ import android.widget.Toast;
 import android.view.ViewGroup.LayoutParams;
 
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
-
-/**
- * Created by kostas4949 on 18/3/2017.
- */
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener{
     private Toolbar my_toolbar;
@@ -47,36 +39,34 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private final float[] mAccelerometerReading = new float[3];
     private final float[] mMagnetometerReading = new float[3];
     private final float[] mRotationMatrix = new float[16];
-    private final float[] mOrientationAngles = new float[3];
-    private boolean ble;
     boolean gps_enabled = false;
     boolean rotation_compatibility=false;
     LocationManager locationManager;
     private AROverlay arOverlay;
     private SensorManager mSensorManager;
     private Sensor mCompass,mCompass1,mCompass2;
-    private SurfaceView surfaceView;
     private FrameLayout cameraContainerLayout;
     private ARCamera arCamera;
     private Camera camera;
     TextView coords;//compa;
+    private long my_minTime;
+    private float my_minDistance;
 
-    //private AROverlayView arOverlayView; tha xreiastei sto mellon gia tis koukides sthn kamera
     private final static int REQUEST_CAMERA_PERMISSIONS_CODE = 11;
     Intent in;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-
-
         setContentView(R.layout.activity_main);
         SharedPreferences my_sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        String radiusstr = my_sharedPref.getString("pref_radius", "10");
-        String antenumstr=my_sharedPref.getString("pref_antenum","5");
-        arOverlay = new AROverlay(this,Double.parseDouble(radiusstr),Integer.parseInt(antenumstr));
-
-        //arOverlayView = new AROverlayView(this); tha xreiastei sto mellon gia tis koukides sthn kamera
+        String radiusstr = my_sharedPref.getString("pref_radius", "50");
+        //String antenumstr=my_sharedPref.getString("pref_antenum","5");
+        int antenum=my_sharedPref.getInt("pref_antenum",5);
+        my_minTime=my_sharedPref.getLong("pref_minTime",50);
+        my_minDistance=my_sharedPref.getFloat("pref_minDistance",1);
+        System.out.println("radius="+radiusstr+", antenum="+antenum+", minTime="+my_minTime+", my_minDistance="+my_minDistance);
+        //arOverlay = new AROverlay(this,Double.parseDouble(radiusstr),Integer.parseInt(antenumstr));
+        arOverlay = new AROverlay(this,Double.parseDouble(radiusstr),antenum);
         mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
         List<Sensor> sensors = mSensorManager.getSensorList(Sensor.TYPE_ALL);
         int i=1;
@@ -95,38 +85,30 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             System.out.println("Min delay:"+mCompass.getMinDelay());
         }
         cameraContainerLayout = (FrameLayout) findViewById(R.id.camera_container_layout);
-        //surfaceView = (SurfaceView) findViewById(R.id.surface_view);
-        //surfaceView.setZOrderOnTop(false);
         coords = (TextView) findViewById(R.id.tv_current_location);
-        //compa= (TextView) findViewById(R.id.textView2);
         my_toolbar = (Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(my_toolbar);
         arCamera=new ARCamera(this, (SurfaceView) findViewById(R.id.surface_view));
         arCamera.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         cameraContainerLayout.addView(arCamera);
-        // coords = (TextView) findViewById(R.id.coord);
         coords.setText("Calculating position....");
-        //compa.setText("Calculating phone rotation..");
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         gps_enabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        //network_enabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
         if (!gps_enabled) {
             coords.setText("Can't get location.GPS is disabled!");
         }
 
-        try { //System.out.println("Start: if (gps_enabled) is true");
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0,
+        try {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, my_minTime, my_minDistance,
                     locationListenerGps);
         } catch (SecurityException e) {
             coords.setText("Can't get gps location(security exception). Check your settings!");
         }
-        //arOverlay.updateCurrentLocation(35.188726,25.718366);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-
         getMenuInflater().inflate(R.menu.my_menu, menu);
         MenuItem item = menu.findItem(R.id.action_mode);
         if (item != null) {
@@ -141,7 +123,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         switch (item.getItemId()) {
             case R.id.action_settings:
                 // User chose the "Settings" item, show the app settings UI...
-                //Toast.makeText(MainActivity.this, "Settings Pressed MAIN", Toast.LENGTH_SHORT).show();
                 Intent i = new Intent(this, SettingsActivity.class);
                 //i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 i.putExtra("EXTRA_PARENT_COMPONENT_NAME", new ComponentName(this, MainActivity.class));
@@ -149,7 +130,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 finish();
                 return true;
             case R.id.action_mode:
-                //Toast.makeText(getApplicationContext(), "Clicked Mode Icon", Toast.LENGTH_SHORT).show();
                 SharedPreferences sharedPref = getSharedPreferences(getString(R.string.pref_file_key), Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPref.edit();
                 editor.putBoolean(getString(R.string.cameramode), false);
@@ -181,8 +161,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     SensorManager.SENSOR_DELAY_FASTEST);
             mSensorManager.registerListener(this, mCompass2,
                     SensorManager.SENSOR_DELAY_FASTEST);
-
-
         }
     }
 
@@ -190,10 +168,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onPause() {
         super.onPause();
         releaseCamera(); //prepei na kanei release thn kamera otan einai se pause, to sygkekrimeno einai akoma buggy
-
         mSensorManager.unregisterListener(this);
-
     }
+
     public void initAROverlay() {
         if (arOverlay.getParent() != null) {
             ((ViewGroup) arOverlay.getParent()).removeView(arOverlay);
@@ -223,11 +200,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     bla = bla + mRotationMatrix[i] + " ";
 
                 }
-                //compa.setText(bla);
                 float[] projectionMatrix = new float[16];
                 float[] rotatedProjectionMatrix = new float[16];
-
-                //mSensorManager.getOrientation(mRotationMatrix, mOrientationAngles);
                 if (arCamera != null) {
                     projectionMatrix = arCamera.getProjectionMatrix();   //Get dimensions of camera
                 }
@@ -236,21 +210,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             }
         }
-        //System.out.println("PEW PEW");
         else {
             if (sEvent.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
                 float[] rotationMatrixFromVector = new float[16];
                 float[] projectionMatrix = new float[16];
                 float[] rotatedProjectionMatrix = new float[16];
                 SensorManager.getRotationMatrixFromVector(rotationMatrixFromVector, sEvent.values); //Get rotation of cell phone
-                //System.out.println("CELL ROTATION: \n");
-                //System.out.println("Not compatiblity!");
                 String bla = "";
                 for (int i = 0; i < rotationMatrixFromVector.length; i++) {
                     bla = bla + rotationMatrixFromVector[i] + " ";
-                    //System.out.print(+rotationMatrixFromVector[i]+ " ");
                 }
-                //compa.setText(bla);
                 if (arCamera != null) {
                     projectionMatrix = arCamera.getProjectionMatrix();   //Get dimensions of camera
                 }
@@ -319,17 +288,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         public void onLocationChanged(Location location) {
             System.out.println("Calculating gps position...");
             if (location!=null) {
+
                 arOverlay.updateCurrentLocation(location);
                 x = location.getLatitude();
                 y = location.getLongitude();
                 z=location.getAltitude();
-                //gps_data=1;
                 coords.setText("location (gps) : " + x + " " + y+"and altitude: "+z);
-                System.out.println("(GPS)x is: "+x+"y is: "+y);
 
             }
             else {
-                //gps_data=0;
                 coords.setText("Calculating position...");
             }
         }

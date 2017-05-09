@@ -73,7 +73,22 @@ public class AROverlay extends View {
         DatabaseAccess databaseAccess = DatabaseAccess.getInstance(this.context);  //kane comment oles aytes tis grammes ama sou kollaei to kinhto
         System.out.println("Opening database!");
         databaseAccess.open();
-        arPoints = databaseAccess.getAntennasWithinRadius(this.currentLocation.getLatitude(),this.currentLocation.getLongitude(),my_radius,antenum);
+        if(my_radius>0 && antenum>0){
+            arPoints = databaseAccess.getAntennasWithinRadius(this.currentLocation.getLatitude(),this.currentLocation.getLongitude(),my_radius,antenum);
+        }
+        else if(my_radius<0 && antenum<0){
+            arPoints=databaseAccess.getAllCellCoords();
+        }
+        else if(antenum<0 && my_radius>0){
+            arPoints=databaseAccess.getAntennasWithinRadius(this.currentLocation.getLatitude(),this.currentLocation.getLongitude(),my_radius);
+        }
+        else if(my_radius<0 && antenum>0){
+            //maximum antennas is just limit, not ordered
+            arPoints=databaseAccess.getMaximumAntennas(this.currentLocation.getLatitude(),this.currentLocation.getLongitude(),antenum);
+        }
+        else{
+            arPoints=null;
+        }
         System.out.println("Got all data!");
         databaseAccess.close();
        // System.out.println("Closed database!");

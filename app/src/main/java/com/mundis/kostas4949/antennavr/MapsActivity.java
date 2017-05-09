@@ -12,10 +12,8 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.opengl.Matrix;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -61,14 +59,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private float mDeclination,bearing;
     ArrayList<ARCoord> my_antennas;
     private double my_radius;
+    private int antenum;
+    private long my_minTime;
+    private float my_minDistance;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         my_context=this;
         setContentView(R.layout.activity_maps);
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        String radiusstr = sharedPref.getString("pref_radius", "10");
+        SharedPreferences my_sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        String radiusstr = my_sharedPref.getString("pref_radius", "50");
+        antenum=my_sharedPref.getInt("pref_antenum",5);
+        my_minTime=my_sharedPref.getLong("pref_minTime",50);
+        my_minDistance=my_sharedPref.getFloat("pref_minDistance",1);
         my_radius=Double.parseDouble(radiusstr);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         //////////////////////////////////////////////////
@@ -78,7 +82,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Toast.makeText(getApplicationContext(), "Can't get location.GPS is disabled!", Toast.LENGTH_SHORT).show();
         }
         try { //System.out.println("Start: if (gps_enabled) is true");
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListenerGps);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, my_minTime, my_minDistance, locationListenerGps);
         } catch (SecurityException e) {
             Toast.makeText(getApplicationContext(),"Can't get gps location(security exception). Check your settings!",Toast.LENGTH_SHORT).show();
         }
