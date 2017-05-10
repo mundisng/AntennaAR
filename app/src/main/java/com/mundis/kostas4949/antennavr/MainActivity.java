@@ -50,24 +50,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Camera camera;
     TextView coords;//compa;
     private long my_minTime;
-    private float my_minDistance;
-    DatabaseAccess databaseAccess;
+    //DatabaseAccess databaseAccess;
 
     private final static int REQUEST_CAMERA_PERMISSIONS_CODE = 11;
     Intent in;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //databaseAccess=DatabaseAccess.getInstance(this);
+        //databaseAccess.open();
         setContentView(R.layout.activity_main);
         SharedPreferences my_sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         String radiusstr = my_sharedPref.getString("pref_radius", "50");
         String antenumstr=my_sharedPref.getString("pref_antenum","5");
         //int antenum=my_sharedPref.getInt("pref_antenum",5);
         String minTimestr = my_sharedPref.getString("pref_minTime", "50");
-        String minDistancestr=my_sharedPref.getString("pref_minDistance","1");
         my_minTime=Long.parseLong(minTimestr);
-        my_minDistance=Float.parseFloat(minDistancestr);
-        System.out.println("radius="+radiusstr+" ,antenum="+antenumstr+", minTime="+my_minTime+", my_minDistance="+my_minDistance);
+        System.out.println("radius="+radiusstr+" ,antenum="+antenumstr+", minTime="+my_minTime);
         arOverlay = new AROverlay(this,Double.parseDouble(radiusstr),Integer.parseInt(antenumstr));
        // databaseAccess = DatabaseAccess.getInstance(this);
        // System.out.println("Opening database!");
@@ -106,7 +105,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         try {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, my_minTime, my_minDistance,
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, my_minTime, 0,
                     locationListenerGps);
         } catch (SecurityException e) {
             coords.setText("Can't get gps location. Check app permissions!");
@@ -183,6 +182,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
        // System.out.println("We just closed the database!");
         releaseCamera(); //prepei na kanei release thn kamera otan einai se pause, to sygkekrimeno einai akoma buggy
 
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        //databaseAccess.close();
     }
 
     public void initAROverlay() {

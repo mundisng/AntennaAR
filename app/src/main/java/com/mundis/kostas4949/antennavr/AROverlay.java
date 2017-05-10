@@ -32,8 +32,7 @@ public class AROverlay extends View {
     private double my_radius;
     private int antenum;
     private Bitmap my_bitmap;
-    DatabaseAccess databaseAccess;
-
+    //DatabaseAccess databaseAccess;
 
     public AROverlay(Context context,double my_radius,int antenum) {
         super(context);
@@ -45,9 +44,9 @@ public class AROverlay extends View {
         my_bitmap = BitmapFactory.decodeResource(res, R.mipmap.ic_launcher_roundantenna);
         //Demo points
         System.out.println("We got in AROverlay");
-        databaseAccess = DatabaseAccess.getInstance(this.context);  //kane comment oles aytes tis grammes ama sou kollaei to kinhto
-       System.out.println("Opening database!");
-        databaseAccess.open();
+        //databaseAccess = DatabaseAccess.getInstance(this.context);  //kane comment oles aytes tis grammes ama sou kollaei to kinhto
+       //System.out.println("Opening database!");
+        //databaseAccess.open();
 
        // if (!global.alreadycached) {
           //  DatabaseAccess databaseAccess = DatabaseAccess.getInstance(this.context);  //kane comment oles aytes tis grammes ama sou kollaei to kinhto
@@ -87,12 +86,12 @@ public class AROverlay extends View {
         //DatabaseAccess databaseAccess = DatabaseAccess.getInstance(this.context);  //kane comment oles aytes tis grammes ama sou kollaei to kinhto
        // System.out.println("Opening database!");
         //databaseAccess.open();
-        databaseAccess = DatabaseAccess.getInstance(this.context);
+        //databaseAccess = DatabaseAccess.getInstance(this.context);
         if(my_radius>0 && antenum>0){
-            arPoints = databaseAccess.getAntennasWithinRadius(this.currentLocation.getLatitude(),this.currentLocation.getLongitude(),my_radius,antenum);
+            arPoints = App.databaseAccess.getAntennasWithinRadius(this.currentLocation.getLatitude(),this.currentLocation.getLongitude(),my_radius,antenum);
         }
         else if(my_radius>0 && antenum==0){
-            arPoints = databaseAccess.getAntennasWithinRadius(this.currentLocation.getLatitude(),this.currentLocation.getLongitude(),my_radius);
+            arPoints = App.databaseAccess.getAntennasWithinRadius(this.currentLocation.getLatitude(),this.currentLocation.getLongitude(),my_radius);
         }
         else{
             arPoints=null;

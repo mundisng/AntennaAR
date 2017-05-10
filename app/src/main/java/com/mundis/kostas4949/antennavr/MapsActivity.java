@@ -62,20 +62,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     ArrayList<ARCoord> my_antennas;
     private double my_radius;
     private long my_minTime;
-    private float my_minDistance;
     private Circle my_last_circle;
+    //private DatabaseAccess databaseAccess;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //databaseAccess=DatabaseAccess.getInstance(this);
+        //databaseAccess.open();
         my_context=this;
         setContentView(R.layout.activity_maps);
         SharedPreferences my_sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         String radiusstr = my_sharedPref.getString("pref_radius", "50");
         String minTimestr = my_sharedPref.getString("pref_minTime", "50");
-        String minDistancestr=my_sharedPref.getString("pref_minDistance","1");
+        //String minDistancestr=my_sharedPref.getString("pref_minDistance","1");
         my_minTime=Long.parseLong(minTimestr);
-        my_minDistance=Float.parseFloat(minDistancestr);
         //my_minTime=my_sharedPref.getLong("pref_minTime",50);
         //my_minDistance=my_sharedPref.getFloat("pref_minDistance",1);
         my_radius=Double.parseDouble(radiusstr);
@@ -88,7 +89,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Toast.makeText(getApplicationContext(), "Can't get location.GPS is disabled!", Toast.LENGTH_SHORT).show();
         }
         try { //System.out.println("Start: if (gps_enabled) is true");
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, my_minTime, my_minDistance, locationListenerGps);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, my_minTime, 0, locationListenerGps);
         } catch (SecurityException e) {
             Toast.makeText(getApplicationContext(),"Can't get gps location(security exception). Check your settings!",Toast.LENGTH_SHORT).show();
         }
@@ -174,7 +175,33 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         @Override
         public void run() {
             if(my_last_known_loc!=null){
-                if(last_loc_antennas_updated==null){
+                LatLng last=my_last_known_loc.getPosition();
+                Double my_lat=last.latitude;
+                Double my_long=last.longitude;
+                //databaseAccess = DatabaseAccess.getInstance(my_context);
+                my_antennas= App.databaseAccess.getAntennasWithinRadius(my_lat,my_long,my_radius);
+                mMap.clear();
+                my_last_known_loc=mMap.addMarker(new MarkerOptions().position(last).title("You are here!"));
+                my_last_circle=mMap.addCircle(new CircleOptions().center(last).radius(my_radius).strokeWidth(0f).fillColor(0x550000FF));
+                //last_loc_antennas_updated=my_last_known_loc;
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(last));
+                updateCamera(bearing);
+                if(my_antennas!=null && !my_antennas.isEmpty()) {
+                    int i = 0;
+                    while (i < my_antennas.size()) {
+                        try {
+                            ARCoord antenna_coord = my_antennas.get(i);
+                            Location antenna_loc = antenna_coord.getLocation();
+                            LatLng my_latlng = new LatLng(antenna_loc.getLatitude(), antenna_loc.getLongitude());
+                            BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher_roundantenna);
+                            mMap.addMarker(new MarkerOptions().position(my_latlng).icon(icon).title(antenna_coord.getName()));
+                        } catch (IndexOutOfBoundsException e) {
+                            break;
+                        }
+                        i++;
+                    }
+                }
+                /*if(last_loc_antennas_updated==null){
                     last_loc_antennas_updated=my_last_known_loc;
                     LatLng last=my_last_known_loc.getPosition();
                     Double my_lat=last.latitude;
@@ -232,7 +259,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                             }
                         }
                     }
-                }
+                }*/
             }
             my_handler.postDelayed(this, MARKER_UPDATE_INTERVAL);
         }
@@ -261,7 +288,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onDestroy() {
         my_handler.removeCallbacks(updateMarker);
-
+        //databaseAccess.close();
         super.onDestroy();
     }
 

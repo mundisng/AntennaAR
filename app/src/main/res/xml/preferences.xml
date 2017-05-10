@@ -18,10 +18,4 @@
         android:summary="@string/pref_minTime_summ"
         android:inputType="number"
         android:defaultValue="50" />
-    <EditTextPreference
-        android:key="pref_minDistance"
-        android:title="@string/pref_minDistance"
-        android:summary="@string/pref_minDistance_summ"
-        android:inputType="numberDecimal"
-        android:defaultValue="1" />
 </PreferenceScreen>

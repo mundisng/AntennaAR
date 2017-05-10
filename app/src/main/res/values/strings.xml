@@ -12,6 +12,4 @@
     <string name="cameramode">cameramode_flag</string>
     <string name="pref_minTime">Minimum Time</string>
     <string name="pref_minTime_summ">How often would you like to check for location updates? (in millisecs)</string>
-    <string name="pref_minDistance">Minimum Distance</string>
-    <string name="pref_minDistance_summ">Update location after moving minimum distance. (in meters)</string>
 </resources>
