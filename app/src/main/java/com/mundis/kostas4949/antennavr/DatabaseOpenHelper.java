@@ -3,9 +3,6 @@ import android.content.Context;
 
 import com.readystatesoftware.sqliteasset.SQLiteAssetHelper;
 
-/**
- * Created by kostas4949 on 2/5/2017.
- */
 
 public class DatabaseOpenHelper extends SQLiteAssetHelper{
     private static final String DATABASE_NAME = "cell_towers_greece.db";

@@ -1,6 +1,5 @@
 package com.mundis.kostas4949.antennavr;
 
-import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -8,9 +7,7 @@ import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.Toast;
+
 
 public class WelcomeActivity extends AppCompatActivity {
     private static int TIME_OUT = 4000;

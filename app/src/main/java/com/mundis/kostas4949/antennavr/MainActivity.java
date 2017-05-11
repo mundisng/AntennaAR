@@ -141,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 editor.putBoolean(getString(R.string.cameramode), false);
                 editor.commit();
                 Intent j = new Intent(MainActivity.this, MapsActivity.class);
-                j.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                //j.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(j);
                 finish();
                 return true;
@@ -184,11 +184,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
-    @Override
+   /* @Override
     public void onDestroy(){
         super.onDestroy();
         //databaseAccess.close();
-    }
+    }*/
 
     public void initAROverlay() {
         if (arOverlay.getParent() != null) {

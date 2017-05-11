@@ -2,9 +2,6 @@ package com.mundis.kostas4949.antennavr;
 
 import android.location.Location;
 
-/**
- * Created by kostas4949 on 24/4/2017.
- */
 
 public class ARCoord {
     Location location;

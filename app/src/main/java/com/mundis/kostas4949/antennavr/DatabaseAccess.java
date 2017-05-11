@@ -36,7 +36,7 @@ public class DatabaseAccess {
 
     public ArrayList<ARCoord> getAllCellCoords(){
         ArrayList<ARCoord> coordlist = new ArrayList<>();
-        Cursor cursor = database.rawQuery("select cell,latitude,longitude,altitude from cell_towers_greece", null);
+        Cursor cursor = database.rawQuery("select cell,latitude,longitude,altitude from cell_towers_greece limit 7", null);
         cursor.moveToFirst();
         while (!cursor.isAfterLast()){
             coordlist.add(new ARCoord(cursor.getString(0),cursor.getDouble(1),cursor.getDouble(2),cursor.getDouble(3)));

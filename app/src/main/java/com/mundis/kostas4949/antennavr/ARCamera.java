@@ -16,9 +16,7 @@ import android.view.ViewGroup;
 import java.io.IOException;
 import java.util.List;
 
-/**
- * Created by kostas4949 on 28/3/2017.
- */
+
 @SuppressWarnings("deprecation")
 @TargetApi(Build.VERSION_CODES.KITKAT)
 public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {

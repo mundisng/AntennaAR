@@ -158,7 +158,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 editor.putBoolean(getString(R.string.cameramode), true);
                 editor.commit();
                 Intent j = new Intent(MapsActivity.this, MainActivity.class);
-                j.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                //j.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(j);
                 finish();
                 return true;
@@ -179,6 +179,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Double my_lat=last.latitude;
                 Double my_long=last.longitude;
                 //databaseAccess = DatabaseAccess.getInstance(my_context);
+                //my_antennas=App.databaseAccess.getAllCellCoords();
                 my_antennas= App.databaseAccess.getAntennasWithinRadius(my_lat,my_long,my_radius);
                 mMap.clear();
                 my_last_known_loc=mMap.addMarker(new MarkerOptions().position(last).title("You are here!"));

@@ -2,9 +2,6 @@ package com.mundis.kostas4949.antennavr;
 
 import android.location.Location;
 
-/**
- * Created by kostas4949 on 24/4/2017.
- */
 
 public class LocationConverter {
     private final static double WGS84_A = 6378137.0;                  // WGS 84 semi-major axis constant in meters
