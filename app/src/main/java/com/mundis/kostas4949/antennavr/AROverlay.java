@@ -26,20 +26,20 @@ import java.util.List;
 public class AROverlay extends View {
     Context context;
     private float[] rotatedProjectionMatrix = new float[16];
-    private Location currentLocation;
-    private List<ARCoord> arPoints;
-    ArrayList<ARCoord> heya;
-    private double my_radius;
-    private int antenum;
+    //private Location currentLocation;
+    //private List<ARCoord> arPoints;
+    //ArrayList<ARCoord> heya;
+    //private double my_radius;
+    //private int antenum;
     private Bitmap my_bitmap;
     //DatabaseAccess databaseAccess;
 
-    public AROverlay(Context context,double my_radius,int antenum) {
+    public AROverlay(Context context/*,double my_radius,int antenum*/) {
         super(context);
 
         this.context = context;
-        this.my_radius=my_radius;
-        this.antenum=antenum;
+        //this.my_radius=my_radius;
+        //this.antenum=antenum;
         Resources res = getResources();
         my_bitmap = BitmapFactory.decodeResource(res, R.mipmap.ic_launcher_roundantenna);
         //Demo points
@@ -81,7 +81,7 @@ public class AROverlay extends View {
         this.invalidate();
     }
 
-    public void updateCurrentLocation(Location currentLocation){
+    /*public void updateCurrentLocation(Location currentLocation){
         this.currentLocation = currentLocation;
         //DatabaseAccess databaseAccess = DatabaseAccess.getInstance(this.context);  //kane comment oles aytes tis grammes ama sou kollaei to kinhto
        // System.out.println("Opening database!");
@@ -104,16 +104,36 @@ public class AROverlay extends View {
         System.out.println("Got "+arPoints.size()+" points.");
         //System.out.println("Got location as:"+currentLocation.getLatitude()+" "+currentLocation.getLongitude());
         this.invalidate();
-    }
+    }*/
+
+
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        Location current_location;
+        synchronized(App.current_location_flag){
+            if(App.current_location==null){
+                return;
+            }
+            else{
+                current_location=App.current_location;
+            }
+        }
+        List<ARCoord> arPoints;
+        synchronized(App.my_antennas_flag){
+            if(App.my_antennas==null || App.my_antennas.isEmpty()){
+                return;
+            }
+            else{
+                arPoints=App.my_antennas;
+            }
+        }
         //System.out.println("We got in here!");
-          if (currentLocation == null || arPoints==null || arPoints.isEmpty()) {
+         /* if (currentLocation == null || arPoints==null || arPoints.isEmpty()) {
         //System.out.println("Current location is null?");
             return;
-         }
+         }*/
         //System.out.println("Starting drawing!");
         final int radius = 30;
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -124,11 +144,11 @@ public class AROverlay extends View {
 
         for (int i = 0; i < arPoints.size(); i ++) {
             System.out.println("Drawing "+arPoints.size()+" points.");
-            float[] currentLocationInECEF = LocationConverter.WGS84toECEF(currentLocation);
+            float[] currentLocationInECEF = LocationConverter.WGS84toECEF(current_location);
            // System.out.println("Location In ECEF: x: "+currentLocationInECEF[0]+" y: "+currentLocationInECEF[1]+" z: "+currentLocationInECEF[2]);
             float[] pointInECEF = LocationConverter.WGS84toECEF(arPoints.get(i).getLocation());
            // System.out.println("Location of Point in ECEF: x: "+pointInECEF[0]+" y: "+pointInECEF[1]+" z: "+pointInECEF[2]);
-            float[] pointInENU = LocationConverter.ECEFtoENU(currentLocation, currentLocationInECEF, pointInECEF);
+            float[] pointInENU = LocationConverter.ECEFtoENU(current_location, currentLocationInECEF, pointInECEF);
            // System.out.println("Position in ENU: East: "+pointInENU[0]+" North: "+pointInENU[1]+"Up: "+pointInENU[2]);
             float[] cameraCoordinateVector = new float[4];
             Matrix.multiplyMV(cameraCoordinateVector, 0, rotatedProjectionMatrix, 0, pointInENU, 0);

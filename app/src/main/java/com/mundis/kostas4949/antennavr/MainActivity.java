@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     TextView coords;//compa;
     private long my_minTime;
     //DatabaseAccess databaseAccess;
+    private MainActivityThread my_thread;
 
     private final static int REQUEST_CAMERA_PERMISSIONS_CODE = 11;
     Intent in;
@@ -61,13 +62,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //databaseAccess.open();
         setContentView(R.layout.activity_main);
         SharedPreferences my_sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        String radiusstr = my_sharedPref.getString("pref_radius", "50");
+        String radiusstr = my_sharedPref.getString("pref_radius", "100");
         String antenumstr=my_sharedPref.getString("pref_antenum","5");
         //int antenum=my_sharedPref.getInt("pref_antenum",5);
         String minTimestr = my_sharedPref.getString("pref_minTime", "50");
         my_minTime=Long.parseLong(minTimestr);
         System.out.println("radius="+radiusstr+" ,antenum="+antenumstr+", minTime="+my_minTime);
-        arOverlay = new AROverlay(this,Double.parseDouble(radiusstr),Integer.parseInt(antenumstr));
+        my_thread=new MainActivityThread(Double.parseDouble(radiusstr),Integer.parseInt(antenumstr));
+        arOverlay = new AROverlay(this/*,Double.parseDouble(radiusstr),Integer.parseInt(antenumstr)*/);
        // databaseAccess = DatabaseAccess.getInstance(this);
        // System.out.println("Opening database!");
        // databaseAccess.open();
@@ -109,6 +111,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     locationListenerGps);
         } catch (SecurityException e) {
             coords.setText("Can't get gps location. Check app permissions!");
+        }
+    }
+
+    @Override
+    public void onStart(){
+        super.onStart();
+        if(my_thread!=null){
+            my_thread.start();
+        }
+    }
+
+    @Override
+    public void onStop(){
+        super.onStop();
+        if (my_thread != null) {
+            my_thread.stop_running();
+            my_thread.interrupt();
         }
     }
 
@@ -307,8 +326,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         public void onLocationChanged(Location location) {
             System.out.println("Calculating gps position...");
             if (location!=null) {
-
-                arOverlay.updateCurrentLocation(location);
+                synchronized(App.current_location_flag){
+                    App.current_location=location;
+                }
+                arOverlay.invalidate();
+                //arOverlay.updateCurrentLocation(location);
                 x = location.getLatitude();
                 y = location.getLongitude();
                 z=location.getAltitude();

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">AntennaVR</string>
+    <string name="app_name">AntennaAR</string>
     <string name="title_activity_maps">Map</string>
     <string name="gps_is_loading">GPS is loading...</string>
     <string name="action_settings">Settings</string>

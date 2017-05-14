@@ -63,6 +63,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private double my_radius;
     private long my_minTime;
     private Circle my_last_circle;
+    private MapsActivityThread my_thread;
     //private DatabaseAccess databaseAccess;
 
     @Override
@@ -73,14 +74,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         my_context=this;
         setContentView(R.layout.activity_maps);
         SharedPreferences my_sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        String radiusstr = my_sharedPref.getString("pref_radius", "50");
+        String radiusstr = my_sharedPref.getString("pref_radius", "100");
         String minTimestr = my_sharedPref.getString("pref_minTime", "50");
         //String minDistancestr=my_sharedPref.getString("pref_minDistance","1");
         my_minTime=Long.parseLong(minTimestr);
         //my_minTime=my_sharedPref.getLong("pref_minTime",50);
         //my_minDistance=my_sharedPref.getFloat("pref_minDistance",1);
         my_radius=Double.parseDouble(radiusstr);
-
+        my_thread=new MapsActivityThread(my_radius);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         //////////////////////////////////////////////////
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
@@ -124,6 +125,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         //my_antennas.add(new ARCoord("what",32.25,42.54,0));
         /////////////////////END///////////////////////////////////////
         mapFragment.getMapAsync(this);
+    }
+
+    @Override
+    public void onStart(){
+        super.onStart();
+        if(my_thread!=null){
+            my_thread.start();
+        }
+    }
+
+    @Override
+    public void onStop(){
+        super.onStop();
+        if (my_thread != null) {
+            my_thread.stop_running();
+            my_thread.interrupt();
+        }
     }
 
     @Override
@@ -174,13 +192,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     Runnable updateMarker = new Runnable() {
         @Override
         public void run() {
+            synchronized(App.my_antennas_flag){
+                my_antennas=App.my_antennas;
+            }
+            System.out.println("updatemarker");
             if(my_last_known_loc!=null){
                 LatLng last=my_last_known_loc.getPosition();
-                Double my_lat=last.latitude;
-                Double my_long=last.longitude;
+                //Double my_lat=last.latitude;
+                //Double my_long=last.longitude;
                 //databaseAccess = DatabaseAccess.getInstance(my_context);
                 //my_antennas=App.databaseAccess.getAllCellCoords();
-                my_antennas= App.databaseAccess.getAntennasWithinRadius(my_lat,my_long,my_radius);
+                //my_antennas= App.databaseAccess.getAntennasWithinRadius(my_lat,my_long,my_radius);
                 mMap.clear();
                 my_last_known_loc=mMap.addMarker(new MarkerOptions().position(last).title("You are here!"));
                 my_last_circle=mMap.addCircle(new CircleOptions().center(last).radius(my_radius).strokeWidth(0f).fillColor(0x550000FF));
@@ -393,6 +415,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         public void onLocationChanged(Location location) {
             System.out.println("Calculating gps position...");
             if (location != null) {
+                synchronized(App.current_location_flag){
+                    App.current_location=location;
+                }
                 field = new GeomagneticField(
                         (float)location.getLatitude(),
                         (float)location.getLongitude(),

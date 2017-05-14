@@ -11,7 +11,7 @@
         android:title="@string/pref_radius"
         android:summary="@string/pref_radius_summ"
         android:inputType="numberDecimal"
-        android:defaultValue="50" />
+        android:defaultValue="100" />
     <EditTextPreference
         android:key="pref_minTime"
         android:title="@string/pref_minTime"
