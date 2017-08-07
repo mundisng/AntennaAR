@@ -50,6 +50,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Camera camera;
     TextView coords;//compa;
     private long my_minTime;
+    private double my_radius;
+    private int my_antenum;
     //DatabaseAccess databaseAccess;
     private MainActivityThread my_thread;
 
@@ -67,8 +69,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //int antenum=my_sharedPref.getInt("pref_antenum",5);
         String minTimestr = my_sharedPref.getString("pref_minTime", "50");
         my_minTime=Long.parseLong(minTimestr);
-        System.out.println("radius="+radiusstr+" ,antenum="+antenumstr+", minTime="+my_minTime);
-        my_thread=new MainActivityThread(Double.parseDouble(radiusstr),Integer.parseInt(antenumstr));
+        my_radius=Double.parseDouble(radiusstr);
+        my_antenum=Integer.parseInt(antenumstr);
+        System.out.println("radius="+my_radius+" ,antenum="+my_antenum+", minTime="+my_minTime);
+        //my_thread=new MainActivityThread(Double.parseDouble(radiusstr),Integer.parseInt(antenumstr));
         arOverlay = new AROverlay(this/*,Double.parseDouble(radiusstr),Integer.parseInt(antenumstr)*/);
        // databaseAccess = DatabaseAccess.getInstance(this);
        // System.out.println("Opening database!");
@@ -117,6 +121,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onStart(){
         super.onStart();
+        my_thread=new MainActivityThread(my_radius,my_antenum);
         if(my_thread!=null){
             my_thread.start();
         }

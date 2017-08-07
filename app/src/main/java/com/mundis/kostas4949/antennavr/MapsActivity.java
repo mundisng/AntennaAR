@@ -81,7 +81,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         //my_minTime=my_sharedPref.getLong("pref_minTime",50);
         //my_minDistance=my_sharedPref.getFloat("pref_minDistance",1);
         my_radius=Double.parseDouble(radiusstr);
-        my_thread=new MapsActivityThread(my_radius);
+        //my_thread=new MapsActivityThread(my_radius);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         //////////////////////////////////////////////////
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
@@ -130,6 +130,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onStart(){
         super.onStart();
+        my_thread=new MapsActivityThread(my_radius);
         if(my_thread!=null){
             my_thread.start();
         }
