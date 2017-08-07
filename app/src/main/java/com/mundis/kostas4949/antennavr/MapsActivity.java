@@ -301,6 +301,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.moveCamera(CameraUpdateFactory.zoomTo(15));
         my_handler.postDelayed(updateMarker,0);
         // Add a marker in Sydney and move the camera
         //LatLng myloc = new LatLng(x, y);
