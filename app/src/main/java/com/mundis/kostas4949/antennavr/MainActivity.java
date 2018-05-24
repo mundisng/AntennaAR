@@ -50,30 +50,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Camera camera;
     TextView coords;//compa;
     private long my_minTime;
-    private double my_radius;
-    private int my_antenum;
-    //DatabaseAccess databaseAccess;
-    private MainActivityThread my_thread;
+    private float my_minDistance;
+    DatabaseAccess databaseAccess;
 
     private final static int REQUEST_CAMERA_PERMISSIONS_CODE = 11;
     Intent in;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //databaseAccess=DatabaseAccess.getInstance(this);
-        //databaseAccess.open();
         setContentView(R.layout.activity_main);
         SharedPreferences my_sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        String radiusstr = my_sharedPref.getString("pref_radius", "100");
+        String radiusstr = my_sharedPref.getString("pref_radius", "50");
         String antenumstr=my_sharedPref.getString("pref_antenum","5");
         //int antenum=my_sharedPref.getInt("pref_antenum",5);
         String minTimestr = my_sharedPref.getString("pref_minTime", "50");
+        String minDistancestr=my_sharedPref.getString("pref_minDistance","1");
         my_minTime=Long.parseLong(minTimestr);
-        my_radius=Double.parseDouble(radiusstr);
-        my_antenum=Integer.parseInt(antenumstr);
-        System.out.println("radius="+my_radius+" ,antenum="+my_antenum+", minTime="+my_minTime);
-        //my_thread=new MainActivityThread(Double.parseDouble(radiusstr),Integer.parseInt(antenumstr));
-        arOverlay = new AROverlay(this/*,Double.parseDouble(radiusstr),Integer.parseInt(antenumstr)*/);
+        my_minDistance=Float.parseFloat(minDistancestr);
+        System.out.println("radius="+radiusstr+" ,antenum="+antenumstr+", minTime="+my_minTime+", my_minDistance="+my_minDistance);
+        //arOverlay = new AROverlay(this,Double.parseDouble(radiusstr),Integer.parseInt(antenumstr));
        // databaseAccess = DatabaseAccess.getInstance(this);
        // System.out.println("Opening database!");
        // databaseAccess.open();
@@ -83,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         List<Sensor> sensors = mSensorManager.getSensorList(Sensor.TYPE_ALL);
         int i=1;
         for (Sensor sensor : sensors) {
-            System.out.println(i+" "+sensor.getName());
+            //System.out.println(i+" "+sensor.getName());
             i++;
         }
         mCompass=mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
@@ -100,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         coords = (TextView) findViewById(R.id.tv_current_location);
         my_toolbar = (Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(my_toolbar);
-        arCamera=new ARCamera(this, (SurfaceView) findViewById(R.id.surface_view));
+        arCamera=new ARCamera(this,(SurfaceView) findViewById(R.id.surface_view));
         arCamera.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         cameraContainerLayout.addView(arCamera);
         coords.setText("Calculating position....");
@@ -111,28 +106,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         try {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, my_minTime, 0,
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, my_minTime, my_minDistance,
                     locationListenerGps);
         } catch (SecurityException e) {
             coords.setText("Can't get gps location. Check app permissions!");
-        }
-    }
-
-    @Override
-    public void onStart(){
-        super.onStart();
-        my_thread=new MainActivityThread(my_radius,my_antenum);
-        if(my_thread!=null){
-            my_thread.start();
-        }
-    }
-
-    @Override
-    public void onStop(){
-        super.onStop();
-        if (my_thread != null) {
-            my_thread.stop_running();
-            my_thread.interrupt();
         }
     }
 
@@ -165,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 editor.putBoolean(getString(R.string.cameramode), false);
                 editor.commit();
                 Intent j = new Intent(MainActivity.this, MapsActivity.class);
-                //j.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                j.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(j);
                 finish();
                 return true;
@@ -180,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onResume() {
         super.onResume();
-        initAROverlay();
+        //initAROverlay();
        // System.out.println("We are trying to open the database!");
         //arOverlay.openDB();
        // System.out.println("We just opened the database!");
@@ -207,12 +184,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         releaseCamera(); //prepei na kanei release thn kamera otan einai se pause, to sygkekrimeno einai akoma buggy
 
     }
-
-   /* @Override
-    public void onDestroy(){
-        super.onDestroy();
-        //databaseAccess.close();
-    }*/
 
     public void initAROverlay() {
         if (arOverlay.getParent() != null) {
@@ -249,7 +220,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     projectionMatrix = arCamera.getProjectionMatrix();   //Get dimensions of camera
                 }
                 Matrix.multiplyMM(rotatedProjectionMatrix, 0, projectionMatrix, 0, mRotationMatrix, 0); //Combine rotation with dimensions of camera
-                this.arOverlay.updateRotatedProjectionMatrix(rotatedProjectionMatrix);
+                //this.arOverlay.updateRotatedProjectionMatrix(rotatedProjectionMatrix);
 
             }
         }
@@ -267,7 +238,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     projectionMatrix = arCamera.getProjectionMatrix();   //Get dimensions of camera
                 }
                 Matrix.multiplyMM(rotatedProjectionMatrix, 0, projectionMatrix, 0, rotationMatrixFromVector, 0); //Combine rotation with dimensions of camera
-                this.arOverlay.updateRotatedProjectionMatrix(rotatedProjectionMatrix);
+                //this.arOverlay.updateRotatedProjectionMatrix(rotatedProjectionMatrix);
             }
         }
     }
@@ -331,10 +302,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         public void onLocationChanged(Location location) {
             System.out.println("Calculating gps position...");
             if (location!=null) {
-                synchronized(App.current_location_flag){
-                    App.current_location=location;
-                }
-                arOverlay.invalidate();
+
                 //arOverlay.updateCurrentLocation(location);
                 x = location.getLatitude();
                 y = location.getLongitude();
