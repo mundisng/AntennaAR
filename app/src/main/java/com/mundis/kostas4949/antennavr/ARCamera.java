@@ -12,6 +12,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.hardware.Camera.Size;
 
 import java.io.IOException;
 import java.util.List;
@@ -24,74 +25,82 @@ import java.util.List;
 public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
     private final String TAG = "ARCamera";
 
-    SurfaceView surfaceView;
-    SurfaceHolder surfaceHolder;
-    Camera.Size previewSize;
-    List<Camera.Size> supportedPreviewSizes;
-    Camera camera;
+    SurfaceView mSurfaceView;
+    SurfaceHolder mHolder;
+    Size mPreviewSize;
+    List<Size> mSupportedPreviewSizes;
+    Camera mCamera;
     Camera.Parameters parameters;
     Activity activity;
 
     float[] projectionMatrix = new float[16];
 
-    int cameraWidth;
-    int cameraHeight;
+    int width;
+    int height;
     private final static float Z_NEAR = 0.5f;
     private final static float Z_FAR = 2000;
 
     public ARCamera(Context context,SurfaceView sv) {
         super(context);
 
-        surfaceView = sv;
-        // addView(surfaceView);
+        mSurfaceView = sv;
+        //addView(mSurfaceView);
         this.activity = (Activity) context;
-        surfaceHolder = surfaceView.getHolder();
-        surfaceHolder.addCallback(this);
-        surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        // addView(surfaceView);
+        mHolder = mSurfaceView.getHolder();
+        mHolder.addCallback(this);
+        mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     }
 
-    public void setCamera(Camera camera2) {
-        camera = camera2;
-        if (this.camera != null) {
-            supportedPreviewSizes = camera.getParameters().getSupportedPreviewSizes();
+    public void setCamera(Camera camera) {
+        mCamera = camera;
+        if (mCamera != null) {
+            mSupportedPreviewSizes = mCamera.getParameters().getSupportedPreviewSizes();
             requestLayout();
             Camera.Parameters params = camera.getParameters();
-
-            List<String> focusModes = params.getSupportedFocusModes();
-            if (focusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
-                params.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-                camera.setParameters(params);
-            }
         }
+    }
+
+    public void switchCamera(Camera camera) {
+        setCamera(camera);
+        try {
+            camera.setPreviewDisplay(mHolder);
+        } catch (IOException exception) {
+            Log.e(TAG, "IOException caused by setPreviewDisplay()", exception);
+        }
+        Camera.Parameters parameters = camera.getParameters();
+        parameters.setPreviewSize(mPreviewSize.width, mPreviewSize.height);
+        requestLayout();
+
+        camera.setParameters(parameters);
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 
-        final int width = resolveSize(getSuggestedMinimumWidth(), widthMeasureSpec);
-        final int height = resolveSize(getSuggestedMinimumHeight(), heightMeasureSpec);
+        width = resolveSize(getSuggestedMinimumWidth(), widthMeasureSpec);
+        height = resolveSize(getSuggestedMinimumHeight(), heightMeasureSpec);
         setMeasuredDimension(width, height);
 
-        if (supportedPreviewSizes != null) {
-            previewSize = getOptimalPreviewSize(supportedPreviewSizes, width, height);
+        if (mSupportedPreviewSizes != null) {
+            mPreviewSize = getOptimalPreviewSize(mSupportedPreviewSizes, width, height);
         }
     }
 
     @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {
         if (changed && getChildCount() > 0) {
             final View child = getChildAt(0);
 
-            final int width = right - left;
-            final int height = bottom - top;
+            width = r - l;
+            height = b - t;
 
             int previewWidth = width;
             int previewHeight = height;
-            if (previewSize != null) {
-                previewWidth = previewSize.width;
-                previewHeight = previewSize.height;
+            if (mPreviewSize != null) {
+                previewWidth = mPreviewSize.width;
+                previewHeight = mPreviewSize.height;
             }
-
             if (width * previewHeight > height * previewWidth) {
                 final int scaledChildWidth = previewWidth * height / previewHeight;
                 child.layout((width - scaledChildWidth) / 2, 0,
@@ -106,16 +115,16 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
 
     public void surfaceCreated(SurfaceHolder holder) {
         try {
-            if (camera != null) {
+            if (mCamera != null) {
 
-                parameters = camera.getParameters();
+                parameters = mCamera.getParameters();
 
-                int orientation = getCameraOrientation();   //Kapws prepei na gurisoume thn kamera, paei plagia twra. Ama kaneis uncomment ayto, crasharei.
+                //int orientation = getCameraOrientation();   //Kapws prepei na gurisoume thn kamera, paei plagia twra. Ama kaneis uncomment ayto, crasharei.
 
-                camera.setDisplayOrientation(orientation);
-                camera.getParameters().setRotation(orientation);
+                //mCamera.setDisplayOrientation(orientation);
+                //mCamera.getParameters().setRotation(orientation);
+                mCamera.setPreviewDisplay(holder);
 
-                camera.setPreviewDisplay(holder);
             }
         } catch (IOException exception) {
             Log.e(TAG, "IOException caused by setPreviewDisplay()", exception);
@@ -156,77 +165,58 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
     }
 
     public void surfaceDestroyed(SurfaceHolder holder) {
-        if (camera != null) {
-            camera.setPreviewCallback(null);
-            camera.stopPreview();
-            camera.release();
-            camera = null;
+        if (mCamera != null) {
+            mCamera.stopPreview();
         }
     }
 
 
-    private Camera.Size getOptimalPreviewSize(List<Camera.Size> sizes, int width, int height) {
+    private Size getOptimalPreviewSize(List<Size> sizes, int w, int h) {
         final double ASPECT_TOLERANCE = 0.1;
-        double targetRatio = (double) width / height;
+        double targetRatio = (double) w / h;
         if (sizes == null) return null;
 
-        Camera.Size optimalSize = null;
+        Size optimalSize = null;
         double minDiff = Double.MAX_VALUE;
 
-        int targetHeight = height;
+        int targetHeight = h;
 
-        for (Camera.Size size : sizes) {
+        // Try to find an size match aspect ratio and size
+        for (Size size : sizes) {
             double ratio = (double) size.width / size.height;
-            if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE) {
-                continue;
-            }
-
+            if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE) continue;
             if (Math.abs(size.height - targetHeight) < minDiff) {
                 optimalSize = size;
                 minDiff = Math.abs(size.height - targetHeight);
             }
         }
 
+        // Cannot find the one match the aspect ratio, ignore the requirement
         if (optimalSize == null) {
             minDiff = Double.MAX_VALUE;
-            for (Camera.Size size : sizes) {
+            for (Size size : sizes) {
                 if (Math.abs(size.height - targetHeight) < minDiff) {
                     optimalSize = size;
                     minDiff = Math.abs(size.height - targetHeight);
                 }
             }
         }
-
-        //  if(optimalSize == null) {
-        //      optimalSize = sizes.get(0);
-        //  }
-
         return optimalSize;
     }
 
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        if(camera != null) {
-            this.cameraWidth = width;
-            this.cameraHeight = height;
-            //System.out.println("Width: "+this.cameraWidth+" Height: "+this.cameraHeight);
-            if (camera!=null) {
-                Camera.Parameters params = camera.getParameters();
-                //List<Camera.Size> previewSizes = parameters.getSupportedPreviewSizes();
-                //Camera.Size previewSize = previewSizes.get(0);
-                //params.setPreviewSize(previewSize.width, previewSize.height);
-                parameters.setPreviewSize(previewSize.width, previewSize.height);
-                requestLayout();
+    public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
+        // Now that the size is known, set up the camera parameters and begin
+        // the preview.
+        Camera.Parameters parameters = mCamera.getParameters();
+        parameters.setPreviewSize(mPreviewSize.width, mPreviewSize.height);
+        requestLayout();
 
-                camera.setParameters(params);
-                camera.startPreview();
-
-                generateProjectionMatrix();
-            }
-        }
+        mCamera.setParameters(parameters);
+        mCamera.startPreview();
     }
 
     private void generateProjectionMatrix() {
-        float ratio = (float) this.cameraWidth / this.cameraHeight;
+        float ratio = (float) this.width / this.height;
         final int OFFSET = 0;
         final float LEFT =  -ratio;
         final float RIGHT = ratio;
