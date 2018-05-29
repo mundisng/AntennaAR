@@ -30,23 +30,30 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
     Size mPreviewSize;
     List<Size> mSupportedPreviewSizes;
     Camera mCamera;
-    Camera.Parameters parameters;
-    Activity activity;
+    //Camera.Parameters parameters;
+    //Activity activity;
+    float correctwidth;
+    float correctheight;
 
     float[] projectionMatrix = new float[16];
 
-    int width;
-    int height;
+    //int width;
+    //int height;
     private final static float Z_NEAR = 0.5f;
     private final static float Z_FAR = 2000;
 
     public ARCamera(Context context,SurfaceView sv) {
         super(context);
 
-        mSurfaceView = sv;
+        /*if (sv.getParent() != null) {
+            ((ViewGroup) sv.getParent()).removeView(sv);
+        }
+        sv.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        addView(sv,sv.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)));*/
+        mSurfaceView=sv;
+        //mSurfaceView = new SurfaceView(context);
+        //this.activity = (Activity) context;
         //addView(mSurfaceView);
-        this.activity = (Activity) context;
-        // addView(surfaceView);
         mHolder = mSurfaceView.getHolder();
         mHolder.addCallback(this);
         mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
@@ -57,7 +64,7 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
         if (mCamera != null) {
             mSupportedPreviewSizes = mCamera.getParameters().getSupportedPreviewSizes();
             requestLayout();
-            Camera.Parameters params = camera.getParameters();
+            //Camera.Parameters params = camera.getParameters();
         }
     }
 
@@ -78,8 +85,8 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 
-        width = resolveSize(getSuggestedMinimumWidth(), widthMeasureSpec);
-        height = resolveSize(getSuggestedMinimumHeight(), heightMeasureSpec);
+        final int width = resolveSize(getSuggestedMinimumWidth(), widthMeasureSpec);
+        final int height = resolveSize(getSuggestedMinimumHeight(), heightMeasureSpec);
         setMeasuredDimension(width, height);
 
         if (mSupportedPreviewSizes != null) {
@@ -92,8 +99,8 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
         if (changed && getChildCount() > 0) {
             final View child = getChildAt(0);
 
-            width = r - l;
-            height = b - t;
+            final int width = r - l;
+            final int height = b - t;
 
             int previewWidth = width;
             int previewHeight = height;
@@ -117,7 +124,7 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
         try {
             if (mCamera != null) {
 
-                parameters = mCamera.getParameters();
+                //parameters = mCamera.getParameters();
 
                 //int orientation = getCameraOrientation();   //Kapws prepei na gurisoume thn kamera, paei plagia twra. Ama kaneis uncomment ayto, crasharei.
 
@@ -131,7 +138,7 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
         }
     }
 
-    private int getCameraOrientation() {
+    /*private int getCameraOrientation() {
         Camera.CameraInfo info = new Camera.CameraInfo();
         Camera.getCameraInfo(Camera.CameraInfo.CAMERA_FACING_BACK, info);
 
@@ -162,7 +169,7 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
         }
 
         return orientation;
-    }
+    }*/
 
     public void surfaceDestroyed(SurfaceHolder holder) {
         if (mCamera != null) {
@@ -186,6 +193,8 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
             double ratio = (double) size.width / size.height;
             if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE) continue;
             if (Math.abs(size.height - targetHeight) < minDiff) {
+                correctwidth=size.width;
+                correctheight=size.height;
                 optimalSize = size;
                 minDiff = Math.abs(size.height - targetHeight);
             }
@@ -196,6 +205,8 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
             minDiff = Double.MAX_VALUE;
             for (Size size : sizes) {
                 if (Math.abs(size.height - targetHeight) < minDiff) {
+                    correctwidth=size.width;
+                    correctheight=size.height;
                     optimalSize = size;
                     minDiff = Math.abs(size.height - targetHeight);
                 }
@@ -212,11 +223,13 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
         requestLayout();
 
         mCamera.setParameters(parameters);
+        generateProjectionMatrix();
         mCamera.startPreview();
+
     }
 
     private void generateProjectionMatrix() {
-        float ratio = (float) this.width / this.height;
+        float ratio = correctwidth / correctheight;
         final int OFFSET = 0;
         final float LEFT =  -ratio;
         final float RIGHT = ratio;

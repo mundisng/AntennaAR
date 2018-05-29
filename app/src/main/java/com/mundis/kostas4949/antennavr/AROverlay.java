@@ -13,8 +13,7 @@ import android.location.Location;
 import android.opengl.Matrix;
 import android.view.View;
 
-import com.google.android.gms.maps.model.BitmapDescriptor;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+
 
 import java.util.ArrayList;
 import java.util.List;

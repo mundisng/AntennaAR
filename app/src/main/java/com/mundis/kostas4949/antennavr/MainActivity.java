@@ -46,6 +46,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private SensorManager mSensorManager;
     private Sensor mCompass,mCompass1,mCompass2;
     private FrameLayout cameraContainerLayout;
+    private SurfaceView surface_viewLayout;
     private ARCamera arCamera;
     private Camera camera;
     TextView coords;//compa;
@@ -54,6 +55,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private int my_antenum;
     //DatabaseAccess databaseAccess;
     private MainActivityThread my_thread;
+    int defaultcameraid;
+
 
     private final static int REQUEST_CAMERA_PERMISSIONS_CODE = 11;
     Intent in;
@@ -96,13 +99,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         else {
             System.out.println("Min delay:"+mCompass.getMinDelay());
         }
+        surface_viewLayout=(SurfaceView) findViewById(R.id.surface_view);
         cameraContainerLayout = (FrameLayout) findViewById(R.id.camera_container_layout);
         coords = (TextView) findViewById(R.id.tv_current_location);
         my_toolbar = (Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(my_toolbar);
         arCamera=new ARCamera(this,(SurfaceView) findViewById(R.id.surface_view));
-        arCamera.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        //arCamera.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         cameraContainerLayout.addView(arCamera);
+        Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+        int numCams = Camera.getNumberOfCameras();
+        for (int xx = 0; xx < numCams; xx++) {
+            Camera.getCameraInfo(xx, cameraInfo);
+            if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
+                defaultcameraid = xx;
+            }
+        }
         coords.setText("Calculating position....");
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         gps_enabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
@@ -315,16 +327,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
           cameraContainerLayout.addView(surfaceView);
       }*/
     private void initCamera() {
-        int numCams = Camera.getNumberOfCameras();
-        if(numCams > 0){
-            try{
-                camera = Camera.open();
-                camera.startPreview();
-                arCamera.setCamera(camera);
-            } catch (RuntimeException ex){
-                Toast.makeText(this, "Camera not found", Toast.LENGTH_LONG).show();
-            }
-        }
+        System.out.println("Opening camera with id: "+defaultcameraid);
+        camera=Camera.open();
+        arCamera.setCamera(camera);
+
     }
     LocationListener locationListenerGps = new LocationListener() {
         public void onLocationChanged(Location location) {
