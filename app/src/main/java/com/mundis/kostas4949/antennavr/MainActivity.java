@@ -191,7 +191,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onResume() {
         super.onResume();
-        //initAROverlay();
+        initAROverlay();
        // System.out.println("We are trying to open the database!");
         //arOverlay.openDB();
        // System.out.println("We just opened the database!");
@@ -260,7 +260,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     projectionMatrix = arCamera.getProjectionMatrix();   //Get dimensions of camera
                 }
                 Matrix.multiplyMM(rotatedProjectionMatrix, 0, projectionMatrix, 0, mRotationMatrix, 0); //Combine rotation with dimensions of camera
-                //this.arOverlay.updateRotatedProjectionMatrix(rotatedProjectionMatrix);
+                this.arOverlay.updateRotatedProjectionMatrix(rotatedProjectionMatrix);
 
             }
         }
@@ -278,7 +278,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     projectionMatrix = arCamera.getProjectionMatrix();   //Get dimensions of camera
                 }
                 Matrix.multiplyMM(rotatedProjectionMatrix, 0, projectionMatrix, 0, rotationMatrixFromVector, 0); //Combine rotation with dimensions of camera
-                //this.arOverlay.updateRotatedProjectionMatrix(rotatedProjectionMatrix);
+                this.arOverlay.updateRotatedProjectionMatrix(rotatedProjectionMatrix);
             }
         }
     }

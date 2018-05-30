@@ -32,13 +32,13 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
     Camera mCamera;
     //Camera.Parameters parameters;
     Activity activity;
-    float correctwidth;
-    float correctheight;
+    //float correctwidth;
+    //float correctheight;
 
     float[] projectionMatrix = new float[16];
 
-    //int width;
-    //int height;
+    int width2;
+    int height2;
     private final static float Z_NEAR = 0.5f;
     private final static float Z_FAR = 2000;
 
@@ -193,8 +193,8 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
             double ratio = (double) size.width / size.height;
             if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE) continue;
             if (Math.abs(size.height - targetHeight) < minDiff) {
-                correctwidth=size.width;
-                correctheight=size.height;
+                //correctwidth=size.width;
+               // correctheight=size.height;
                 optimalSize = size;
                 minDiff = Math.abs(size.height - targetHeight);
             }
@@ -205,8 +205,8 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
             minDiff = Double.MAX_VALUE;
             for (Size size : sizes) {
                 if (Math.abs(size.height - targetHeight) < minDiff) {
-                    correctwidth=size.width;
-                    correctheight=size.height;
+                  //  correctwidth=size.width;
+                  //  correctheight=size.height;
                     optimalSize = size;
                     minDiff = Math.abs(size.height - targetHeight);
                 }
@@ -218,6 +218,8 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
         // Now that the size is known, set up the camera parameters and begin
         // the preview.
+        this.width2=w;
+        this.height2=h;
         Camera.Parameters parameters = mCamera.getParameters();
         parameters.setPreviewSize(mPreviewSize.width, mPreviewSize.height);
         requestLayout();
@@ -229,7 +231,7 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
     }
 
     private void generateProjectionMatrix() {
-        float ratio = correctwidth / correctheight;
+        float ratio = (float)this.width2 / this.height2;
         final int OFFSET = 0;
         final float LEFT =  -ratio;
         final float RIGHT = ratio;
