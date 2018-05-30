@@ -31,7 +31,7 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
     List<Size> mSupportedPreviewSizes;
     Camera mCamera;
     //Camera.Parameters parameters;
-    //Activity activity;
+    Activity activity;
     float correctwidth;
     float correctheight;
 
@@ -52,7 +52,7 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
         addView(sv,sv.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)));*/
         mSurfaceView=sv;
         //mSurfaceView = new SurfaceView(context);
-        //this.activity = (Activity) context;
+        this.activity = (Activity) context;
         //addView(mSurfaceView);
         mHolder = mSurfaceView.getHolder();
         mHolder.addCallback(this);
@@ -126,10 +126,10 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
 
                 //parameters = mCamera.getParameters();
 
-                //int orientation = getCameraOrientation();   //Kapws prepei na gurisoume thn kamera, paei plagia twra. Ama kaneis uncomment ayto, crasharei.
+                int orientation = getCameraOrientation();   //Kapws prepei na gurisoume thn kamera, paei plagia twra. Ama kaneis uncomment ayto, crasharei.
 
-                //mCamera.setDisplayOrientation(orientation);
-                //mCamera.getParameters().setRotation(orientation);
+                mCamera.setDisplayOrientation(orientation);
+                mCamera.getParameters().setRotation(orientation);
                 mCamera.setPreviewDisplay(holder);
 
             }
@@ -138,7 +138,7 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
         }
     }
 
-    /*private int getCameraOrientation() {
+    private int getCameraOrientation() {
         Camera.CameraInfo info = new Camera.CameraInfo();
         Camera.getCameraInfo(Camera.CameraInfo.CAMERA_FACING_BACK, info);
 
@@ -169,7 +169,7 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
         }
 
         return orientation;
-    }*/
+    }
 
     public void surfaceDestroyed(SurfaceHolder holder) {
         if (mCamera != null) {
