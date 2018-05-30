@@ -1,9 +1,13 @@
 package com.mundis.kostas4949.antennavr;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Handler;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -13,28 +17,130 @@ public class WelcomeActivity extends AppCompatActivity {
     private static int TIME_OUT = 4000;
     private static Toolbar my_toolbar;
     boolean cameramode_flag=true;
+    boolean hascamerapermission=false;
+    boolean haslocationpermission=false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
         my_toolbar = (Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(my_toolbar);
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                SharedPreferences sharedPref =getSharedPreferences(getString(R.string.pref_file_key), Context.MODE_PRIVATE);
-                cameramode_flag=sharedPref.getBoolean(getString(R.string.cameramode),true);
-                if(cameramode_flag){
-                    Intent i = new Intent(WelcomeActivity.this, MainActivity.class);
-                    startActivity(i);
+        requestPermissions();
+        if (hascamerapermission && haslocationpermission) {
+            System.out.println("We got in here with all the permissions!");
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    System.out.println("WE GOT INTO FIRST RUN!");
+                    SharedPreferences sharedPref = getSharedPreferences(getString(R.string.pref_file_key), Context.MODE_PRIVATE);
+                    cameramode_flag = sharedPref.getBoolean(getString(R.string.cameramode), true);
+                    if (cameramode_flag) {
+                        Intent i = new Intent(WelcomeActivity.this, MainActivity.class);
+                        startActivity(i);
+                    } else {
+                        Intent i = new Intent(WelcomeActivity.this, MapsActivity.class);
+                        startActivity(i);
+                    }
+                    finish();
+                }
+            }, TIME_OUT);
+        }
+        else {
+            System.out.println("We are in the not accepted permissions");
+        }
+    }
+
+
+    public void requestPermissions(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            if (this.checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
+                if (this.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){  //8eloume kai ta 2
+                    this.requestPermissions(new String[]{Manifest.permission.CAMERA,Manifest.permission.ACCESS_FINE_LOCATION}, 11);
                 }
                 else{
-                    Intent i= new Intent(WelcomeActivity.this,MapsActivity.class);
-                    startActivity(i);
+                    this.requestPermissions(new String[]{Manifest.permission.CAMERA}, 11); //mono kamera
                 }
-                finish();
             }
-        }, TIME_OUT);
+            else {
+                if (this.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+                    this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 11); //mono location
+                }
+                else {
+                    hascamerapermission=true;    //ok kai ta 2
+                    haslocationpermission=true;
+                }
+            }
+        }
+        else{
+            hascamerapermission=true;
+            haslocationpermission=true;
+        }
+
+    }
+    public void requestCameraPermission() {
+        System.out.println("We requested camera permission!");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+                this.checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            System.out.println("Camera option 1");
+            this.requestPermissions(new String[]{Manifest.permission.CAMERA}, 11);
+        } else {
+            System.out.println("Camera option 2");
+            hascamerapermission=true;
+            //initCamera();
+        }
+    }
+
+    public void requestLocationPermission(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+                this.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            System.out.println("Location option 1");
+            this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 15);
+         } else {
+            System.out.println("Location option 2");
+            haslocationpermission=true;
+        }
+
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults){
+
+        switch (requestCode){
+            case 11:{
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1]==PackageManager.PERMISSION_GRANTED) {
+                    hascamerapermission=true;
+                    haslocationpermission=true;
+                    System.out.println("Have both permissions!");
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            System.out.println("WE GOT INTO SECOND RUN!");
+                            SharedPreferences sharedPref = getSharedPreferences(getString(R.string.pref_file_key), Context.MODE_PRIVATE);
+                            cameramode_flag = sharedPref.getBoolean(getString(R.string.cameramode), true);
+                            if (cameramode_flag) {
+                                Intent i = new Intent(WelcomeActivity.this, MainActivity.class);
+                                startActivity(i);
+                            } else {
+                                Intent i = new Intent(WelcomeActivity.this, MapsActivity.class);
+                                startActivity(i);
+                            }
+                            finish();
+                        }
+                    }, TIME_OUT);
+
+                    }
+                    else{
+                    AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+                    alertDialog.setTitle("Permissions");
+                    alertDialog.setMessage("This app doesn't work without the appropriate permissions!");
+                    alertDialog.show();
+                }
+
+                }
+
+        }
+
     }
 
     /*@Override

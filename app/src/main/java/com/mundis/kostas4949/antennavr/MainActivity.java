@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
     private final static int REQUEST_CAMERA_PERMISSIONS_CODE = 11;
+    private final static int REQUEST_ACCESS_FINE_LOCATION_PERMISSIONS_CODE=15;
     Intent in;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,6 +124,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         try {
+            //requestLocationPermission();
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, my_minTime, 0,
                     locationListenerGps);
         } catch (SecurityException e) {
@@ -191,11 +193,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onResume() {
         super.onResume();
+        //requestCameraPermission();
+        initCamera();
         initAROverlay();
        // System.out.println("We are trying to open the database!");
         //arOverlay.openDB();
        // System.out.println("We just opened the database!");
-        requestCameraPermission();
         if (!rotation_compatibility) {
             mSensorManager.registerListener(this, mCompass, SensorManager.SENSOR_DELAY_FASTEST);
 
@@ -305,6 +308,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             System.out.println("Camera option 2");
             initCamera();
         }
+    }
+    public void requestLocationPermission(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+                this.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            System.out.println("Location option 1");
+            this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_ACCESS_FINE_LOCATION_PERMISSIONS_CODE);
+        } else {
+            System.out.println("Location option 2");
+
+        }
+
     }
 
     /*public void initARCameraView() {
