@@ -59,11 +59,13 @@ public class WelcomeActivity extends AppCompatActivity {
                 }
                 else{
                     this.requestPermissions(new String[]{Manifest.permission.CAMERA}, 11); //mono kamera
+                    haslocationpermission=true;
                 }
             }
             else {
                 if (this.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
                     this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 11); //mono location
+                    hascamerapermission=true;
                 }
                 else {
                     hascamerapermission=true;    //ok kai ta 2
@@ -107,35 +109,64 @@ public class WelcomeActivity extends AppCompatActivity {
 
         switch (requestCode){
             case 11:{
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1]==PackageManager.PERMISSION_GRANTED) {
-                    hascamerapermission=true;
-                    haslocationpermission=true;
-                    System.out.println("Have both permissions!");
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            System.out.println("WE GOT INTO SECOND RUN!");
-                            SharedPreferences sharedPref = getSharedPreferences(getString(R.string.pref_file_key), Context.MODE_PRIVATE);
-                            cameramode_flag = sharedPref.getBoolean(getString(R.string.cameramode), true);
-                            if (cameramode_flag) {
-                                Intent i = new Intent(WelcomeActivity.this, MainActivity.class);
-                                startActivity(i);
-                            } else {
-                                Intent i = new Intent(WelcomeActivity.this, MapsActivity.class);
-                                startActivity(i);
+                if (grantResults.length > 0) {
+                    for (int i=0; i<permissions.length; i++){
+                        if (permissions[i].equals(Manifest.permission.ACCESS_FINE_LOCATION)){
+                            if (grantResults[i] == PackageManager.PERMISSION_GRANTED){
+                                haslocationpermission=true;
                             }
-                            finish();
                         }
-                    }, TIME_OUT);
-
+                        if (permissions[i].equals(Manifest.permission.CAMERA)){
+                            if (grantResults[i] == PackageManager.PERMISSION_GRANTED){
+                                hascamerapermission=true;
+                            }
+                        }
                     }
-                    else{
-                    AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-                    alertDialog.setTitle("Permissions");
-                    alertDialog.setMessage("This app doesn't work without the appropriate permissions!");
-                    alertDialog.show();
+                    if (hascamerapermission && haslocationpermission){
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                System.out.println("WE GOT INTO SECOND RUN!");
+                                SharedPreferences sharedPref = getSharedPreferences(getString(R.string.pref_file_key), Context.MODE_PRIVATE);
+                                cameramode_flag = sharedPref.getBoolean(getString(R.string.cameramode), true);
+                                if (cameramode_flag) {
+                                    Intent i = new Intent(WelcomeActivity.this, MainActivity.class);
+                                    startActivity(i);
+                                } else {
+                                    Intent i = new Intent(WelcomeActivity.this, MapsActivity.class);
+                                    startActivity(i);
+                                }
+                                finish();
+                            }
+                        }, TIME_OUT);
+                    }
+                    else {
+                        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+                        alertDialog.setTitle("Permissions");
+                        alertDialog.setMessage("This app doesn't work without the appropriate permissions!");
+                        alertDialog.show();
+                    }
                 }
+                        /*System.out.println("Have both permissions!");
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                System.out.println("WE GOT INTO SECOND RUN!");
+                                SharedPreferences sharedPref = getSharedPreferences(getString(R.string.pref_file_key), Context.MODE_PRIVATE);
+                                cameramode_flag = sharedPref.getBoolean(getString(R.string.cameramode), true);
+                                if (cameramode_flag) {
+                                    Intent i = new Intent(WelcomeActivity.this, MainActivity.class);
+                                    startActivity(i);
+                                } else {
+                                    Intent i = new Intent(WelcomeActivity.this, MapsActivity.class);
+                                    startActivity(i);
+                                }
+                                finish();
+                            }
+                        }, TIME_OUT);
+                        }
+*/
+
 
                 }
 
