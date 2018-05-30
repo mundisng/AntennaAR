@@ -105,9 +105,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         coords = (TextView) findViewById(R.id.tv_current_location);
         my_toolbar = (Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(my_toolbar);
-        arCamera=new ARCamera(this,(SurfaceView) findViewById(R.id.surface_view));
+        arCamera=new ARCamera(this,surface_viewLayout);
         //arCamera.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-        cameraContainerLayout.addView(arCamera);
+        //cameraContainerLayout.addView(arCamera);
         Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
         int numCams = Camera.getNumberOfCameras();
         for (int xx = 0; xx < numCams; xx++) {
@@ -192,9 +192,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     public void onResume() {
+        cameraContainerLayout.addView(arCamera);
+        //cameraContainerLayout.addView(arCamera);
+        //arCamera.setVisibility(ViewGroup.VISIBLE);
+        System.out.println("WE RESUMED!");
         super.onResume();
         //requestCameraPermission();
         initCamera();
+       // cameraContainerLayout.addView(arCamera);
         initAROverlay();
        // System.out.println("We are trying to open the database!");
         //arOverlay.openDB();
@@ -218,7 +223,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
        // System.out.println("We are trying to close the database!");
         //arOverlay.closeDB();
        // System.out.println("We just closed the database!");
+        //arCamera.setVisibility(ViewGroup.GONE);
         releaseCamera(); //prepei na kanei release thn kamera otan einai se pause, to sygkekrimeno einai akoma buggy
+        cameraContainerLayout.removeView(arCamera);
 
     }
 
@@ -290,7 +297,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void releaseCamera() {
         if(camera != null) {
             //camera.setPreviewCallback(null);
-            camera.stopPreview();
+            //camera.stopPreview();
             arCamera.setCamera(null);
             camera.release();
             camera = null;
@@ -344,6 +351,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         System.out.println("Opening camera with id: "+defaultcameraid);
         camera=Camera.open();
         arCamera.setCamera(camera);
+        System.out.println("Opened and set camera in main thread");
 
     }
     LocationListener locationListenerGps = new LocationListener() {
