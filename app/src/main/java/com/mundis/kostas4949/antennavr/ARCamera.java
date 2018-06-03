@@ -30,10 +30,7 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
     Size mPreviewSize;
     List<Size> mSupportedPreviewSizes;
     Camera mCamera;
-    //Camera.Parameters parameters;
     Activity activity;
-    //float correctwidth;
-    //float correctheight;
 
     float[] projectionMatrix = new float[16];
 
@@ -45,15 +42,9 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
     public ARCamera(Context context,SurfaceView sv) {
         super(context);
 
-        /*if (sv.getParent() != null) {
-            ((ViewGroup) sv.getParent()).removeView(sv);
-        }
-        sv.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-        addView(sv,sv.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)));*/
+
         mSurfaceView=sv;
-        //mSurfaceView = new SurfaceView(context);
         this.activity = (Activity) context;
-        //addView(mSurfaceView);
         mHolder = mSurfaceView.getHolder();
         mHolder.addCallback(this);
         mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
@@ -64,22 +55,7 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
         if (mCamera != null) {
             mSupportedPreviewSizes = mCamera.getParameters().getSupportedPreviewSizes();
             requestLayout();
-            //Camera.Parameters params = camera.getParameters();
         }
-    }
-
-    public void switchCamera(Camera camera) {
-        setCamera(camera);
-        try {
-            camera.setPreviewDisplay(mHolder);
-        } catch (IOException exception) {
-            Log.e(TAG, "IOException caused by setPreviewDisplay()", exception);
-        }
-        Camera.Parameters parameters = camera.getParameters();
-        parameters.setPreviewSize(mPreviewSize.width, mPreviewSize.height);
-        requestLayout();
-
-        camera.setParameters(parameters);
     }
 
     @Override
@@ -123,8 +99,6 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
     public void surfaceCreated(SurfaceHolder holder) {
         try {
             if (mCamera != null) {
-
-                //parameters = mCamera.getParameters();
 
                 int orientation = getCameraOrientation();   //Kapws prepei na gurisoume thn kamera, paei plagia twra. Ama kaneis uncomment ayto, crasharei.
 
@@ -193,8 +167,6 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
             double ratio = (double) size.width / size.height;
             if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE) continue;
             if (Math.abs(size.height - targetHeight) < minDiff) {
-                //correctwidth=size.width;
-               // correctheight=size.height;
                 optimalSize = size;
                 minDiff = Math.abs(size.height - targetHeight);
             }
@@ -205,8 +177,6 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
             minDiff = Double.MAX_VALUE;
             for (Size size : sizes) {
                 if (Math.abs(size.height - targetHeight) < minDiff) {
-                  //  correctwidth=size.width;
-                  //  correctheight=size.height;
                     optimalSize = size;
                     minDiff = Math.abs(size.height - targetHeight);
                 }

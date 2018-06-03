@@ -25,45 +25,15 @@ import java.util.List;
 public class AROverlay extends View {
     Context context;
     private float[] rotatedProjectionMatrix = new float[16];
-    //private Location currentLocation;
-    //private List<ARCoord> arPoints;
-    //ArrayList<ARCoord> heya;
-    //private double my_radius;
-    //private int antenum;
     private Bitmap my_bitmap;
-    //DatabaseAccess databaseAccess;
 
     public AROverlay(Context context/*,double my_radius,int antenum*/) {
         super(context);
 
         this.context = context;
-        //this.my_radius=my_radius;
-        //this.antenum=antenum;
         Resources res = getResources();
         my_bitmap = BitmapFactory.decodeResource(res, R.mipmap.ic_launcher_roundantenna);
-        //Demo points
         System.out.println("We got in AROverlay");
-        //databaseAccess = DatabaseAccess.getInstance(this.context);  //kane comment oles aytes tis grammes ama sou kollaei to kinhto
-       //System.out.println("Opening database!");
-        //databaseAccess.open();
-
-       // if (!global.alreadycached) {
-          //  DatabaseAccess databaseAccess = DatabaseAccess.getInstance(this.context);  //kane comment oles aytes tis grammes ama sou kollaei to kinhto
-          //  System.out.println("Opening database!");
-          //  databaseAccess.open();
-          //  arPoints = databaseAccess.getAntennasWithinRadius();
-          //  System.out.println("Got all data!");
-          //  databaseAccess.close();
-          //  System.out.println("Closed database!");
-            //global.alreadycached=true;
-       // }
-
-       // arPoints = new ArrayList<ARCoord>() {{
-            // add(new ARCoord("Sun Wheel", 16.0404856, 108.2262447, 0));
-            // add(new ARCoord("Linh Ung Pagoda", 16.1072989, 108.2343984, 0));
-        //    add(new ARCoord("testing",35.188726,25.718366,30));
-        //    add(new ARCoord("testing2",35.188476,25.718780,40));
-       // }};
     }
 
     public void openDB(){
@@ -79,33 +49,6 @@ public class AROverlay extends View {
         this.rotatedProjectionMatrix = rotatedProjectionMatrix;
         this.invalidate();
     }
-
-    /*public void updateCurrentLocation(Location currentLocation){
-        this.currentLocation = currentLocation;
-        //DatabaseAccess databaseAccess = DatabaseAccess.getInstance(this.context);  //kane comment oles aytes tis grammes ama sou kollaei to kinhto
-       // System.out.println("Opening database!");
-        //databaseAccess.open();
-        //databaseAccess = DatabaseAccess.getInstance(context.getApplicationContext());
-        if(my_radius>0 && antenum>0){
-            //arPoints=App.databaseAccess.getAllCellCoords();
-            arPoints = App.databaseAccess.getAntennasWithinRadius(this.currentLocation.getLatitude(),this.currentLocation.getLongitude(),my_radius,antenum);
-        }
-        else if(my_radius>0 && antenum==0){
-                     //arPoints=App.databaseAccess.getAllCellCoords();
-            arPoints = App.databaseAccess.getAntennasWithinRadius(this.currentLocation.getLatitude(),this.currentLocation.getLongitude(),my_radius);
-        }
-        else{
-            arPoints=null;
-        }
-        System.out.println("Got all data!");
-        //databaseAccess.close();
-       // System.out.println("Closed database!");
-        System.out.println("Got "+arPoints.size()+" points.");
-        //System.out.println("Got location as:"+currentLocation.getLatitude()+" "+currentLocation.getLongitude());
-        this.invalidate();
-    }*/
-
-
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -128,12 +71,6 @@ public class AROverlay extends View {
                 arPoints=App.my_antennas;
             }
         }
-        //System.out.println("We got in here!");
-         /* if (currentLocation == null || arPoints==null || arPoints.isEmpty()) {
-        //System.out.println("Current location is null?");
-            return;
-         }*/
-        //System.out.println("Starting drawing!");
         final int radius = 30;
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setStyle(Paint.Style.FILL);

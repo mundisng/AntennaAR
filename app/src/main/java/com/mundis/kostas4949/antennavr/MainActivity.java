@@ -64,32 +64,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //databaseAccess=DatabaseAccess.getInstance(this);
-        //databaseAccess.open();
         setContentView(R.layout.activity_main);
         SharedPreferences my_sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         String radiusstr = my_sharedPref.getString("pref_radius", "100");
         String antenumstr=my_sharedPref.getString("pref_antenum","5");
-        //int antenum=my_sharedPref.getInt("pref_antenum",5);
         String minTimestr = my_sharedPref.getString("pref_minTime", "50");
         my_minTime=Long.parseLong(minTimestr);
         my_radius=Double.parseDouble(radiusstr);
         my_antenum=Integer.parseInt(antenumstr);
         System.out.println("radius="+my_radius+" ,antenum="+my_antenum+", minTime="+my_minTime);
-        //my_thread=new MainActivityThread(Double.parseDouble(radiusstr),Integer.parseInt(antenumstr));
-        arOverlay = new AROverlay(this/*,Double.parseDouble(radiusstr),Integer.parseInt(antenumstr)*/);
-       // databaseAccess = DatabaseAccess.getInstance(this);
-       // System.out.println("Opening database!");
-       // databaseAccess.open();
-        //arOverlay.openDB();
-        //arOverlay = new AROverlay(this,Double.parseDouble(radiusstr),antenum);
+        arOverlay = new AROverlay(this);
         mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
         List<Sensor> sensors = mSensorManager.getSensorList(Sensor.TYPE_ALL);
-        int i=1;
-        for (Sensor sensor : sensors) {
-            //System.out.println(i+" "+sensor.getName());
-            i++;
-        }
         mCompass=mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
         if (mCompass==null || mCompass.getMinDelay()==0){
             System.out.println("Going into compatibility mode");
@@ -106,8 +92,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         my_toolbar = (Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(my_toolbar);
         arCamera=new ARCamera(this,surface_viewLayout);
-        //arCamera.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-        //cameraContainerLayout.addView(arCamera);
         Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
         int numCams = Camera.getNumberOfCameras();
         for (int xx = 0; xx < numCams; xx++) {
@@ -124,7 +108,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         try {
-            //requestLocationPermission();
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, my_minTime, 0,
                     locationListenerGps);
         } catch (SecurityException e) {
@@ -193,17 +176,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onResume() {
         cameraContainerLayout.addView(arCamera);
-        //cameraContainerLayout.addView(arCamera);
-        //arCamera.setVisibility(ViewGroup.VISIBLE);
         System.out.println("WE RESUMED!");
         super.onResume();
-        //requestCameraPermission();
         initCamera();
-       // cameraContainerLayout.addView(arCamera);
         initAROverlay();
-       // System.out.println("We are trying to open the database!");
-        //arOverlay.openDB();
-       // System.out.println("We just opened the database!");
         if (!rotation_compatibility) {
             mSensorManager.registerListener(this, mCompass, SensorManager.SENSOR_DELAY_FASTEST);
 
@@ -220,20 +196,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onPause() {
         super.onPause();
         mSensorManager.unregisterListener(this);
-       // System.out.println("We are trying to close the database!");
-        //arOverlay.closeDB();
-       // System.out.println("We just closed the database!");
-        //arCamera.setVisibility(ViewGroup.GONE);
         releaseCamera(); //prepei na kanei release thn kamera otan einai se pause, to sygkekrimeno einai akoma buggy
         cameraContainerLayout.removeView(arCamera);
 
     }
-
-    /* @Override
-    public void onDestroy(){
-        super.onDestroy();
-        //databaseAccess.close();
-    }*/
 
     public void initAROverlay() {
         if (arOverlay.getParent() != null) {
@@ -304,49 +270,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
-
-    public void requestCameraPermission() {
-        System.out.println("We requested camera permission!");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
-                this.checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            System.out.println("Camera option 1");
-            this.requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSIONS_CODE);
-        } else {
-            System.out.println("Camera option 2");
-            initCamera();
-        }
-    }
-    public void requestLocationPermission(){
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
-                this.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            System.out.println("Location option 1");
-            this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_ACCESS_FINE_LOCATION_PERMISSIONS_CODE);
-        } else {
-            System.out.println("Location option 2");
-
-        }
-
-    }
-
-    /*public void initARCameraView() {
-        reloadSurfaceView();
-        if (arCamera == null) {
-           // arCamera = new ARCamera(this, surfaceView);
-        }
-        if (arCamera.getParent() != null) {
-            ((ViewGroup) arCamera.getParent()).removeView(arCamera);
-        }
-        cameraContainerLayout.addView(arCamera);
-        arCamera.setKeepScreenOn(true);
-        initCamera();
-    }*/
-
-    /*  private void reloadSurfaceView() {
-          if (surfaceView.getParent() != null) {
-              ((ViewGroup) surfaceView.getParent()).removeView(surfaceView);
-          }
-          cameraContainerLayout.addView(surfaceView);
-      }*/
     private void initCamera() {
         System.out.println("Opening camera with id: "+defaultcameraid);
         camera=Camera.open();
@@ -376,24 +299,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         public void onProviderDisabled(String provider) {
             System.out.println("We know "+provider+" is disabled in gps listener!");
             coords.setText("Gps disabled, please enable it!");
-            //if (!locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
-            //     System.out.println("Option 1");
-            //     gps_data=0;
-            //     coords.setText("Can't get location from either gps or network. Check settings!");
-            //  }
-            // else{
-            //    gps_data=0;
-            //     System.out.println("Option 2");
-            //     coords.setText("Calculating position...");
-                /*try {
-                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0,
-                            locationListenerNetwork);
-                } catch (SecurityException e) {
-                    coords.setText("Can't get network location(security exception). Check your settings!");
-                }*/
-            // }
-
-
         }
 
         public void onProviderEnabled(String provider) {
@@ -405,46 +310,5 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         }
     };
-
-   /* LocationListener locationListenerNetwork = new LocationListener() {
-        public void onLocationChanged(Location location) {
-            System.out.println("Calculating network position for: "+location+"...");
-            if (location != null && gps_data == 0) {
-                x = location.getLatitude();
-                y = location.getLongitude();
-                System.out.println("(Network)x is: "+x+"y is: "+y);
-                coords.setText("location (network) : " + x + " " + y);
-                /*extras.putDouble("x",x);
-                extras.putDouble("y",y);
-                in.putExtras(extras);
-            }
-            if (location==null && gps_data == 0){
-                coords.setText("Can't get location from gps or network. Check settings!");
-            }
-        }
-        public void onProviderDisabled(String provider) {
-            System.out.println("We know "+provider+" is disabled in network listener!");
-            if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
-                gps_data=0;
-                System.out.println("Option 1/network");
-                coords.setText("Can't get location from either gps or network. Check settings!");
-            }
-            else{
-                System.out.println("Option 2/network");
-                coords.setText("Calculating position...");
-                /*try {
-                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0,
-                            locationListenerNetwork);
-                } catch (SecurityException e) {
-                    coords.setText("Can't get network location(security exception). Check your settings!");
-                }
-            }
-        }
-        public void onProviderEnabled(String provider) {
-            System.out.println("Network provider knows we enabled: "+provider);
-        }
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-        }
-    };*/
 
 }
