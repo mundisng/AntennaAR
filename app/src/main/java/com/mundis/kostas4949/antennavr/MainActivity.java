@@ -20,6 +20,15 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.telephony.CellInfo;
+import android.telephony.CellInfoGsm;
+import android.telephony.CellInfoLte;
+import android.telephony.CellInfoWcdma;
+import android.telephony.CellSignalStrengthGsm;
+import android.telephony.CellSignalStrengthLte;
+import android.telephony.CellSignalStrengthWcdma;
+import android.telephony.TelephonyManager;
+import android.telephony.gsm.GsmCellLocation;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SurfaceView;
@@ -56,6 +65,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     //DatabaseAccess databaseAccess;
     private MainActivityThread my_thread;
     int defaultcameraid;
+    private int cellid;
+    String strength;
 
 
     private final static int REQUEST_CAMERA_PERMISSIONS_CODE = 11;
@@ -73,6 +84,50 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         my_radius=Double.parseDouble(radiusstr);
         my_antenum=Integer.parseInt(antenumstr);
         System.out.println("radius="+my_radius+" ,antenum="+my_antenum+", minTime="+my_minTime);
+        TelephonyManager telephony = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        try {
+            List<CellInfo> cellInfos = telephony.getAllCellInfo();
+            if (!cellInfos.isEmpty()) {
+                for (int i=0; i<cellInfos.size(); i++ ){
+                    if (cellInfos.get(i).isRegistered()){
+                        if(cellInfos.get(i) instanceof CellInfoWcdma){
+                            CellInfoWcdma cellInfoWcdma = (CellInfoWcdma) telephony.getAllCellInfo().get(0);
+                            CellSignalStrengthWcdma cellSignalStrengthWcdma = cellInfoWcdma.getCellSignalStrength();
+                            strength = String.valueOf(cellSignalStrengthWcdma.getDbm());
+                            cellid=cellInfoWcdma.getCellIdentity().getCid();
+                        }else if(cellInfos.get(i) instanceof CellInfoGsm){
+                            CellInfoGsm cellInfogsm = (CellInfoGsm) telephony.getAllCellInfo().get(0);
+                            CellSignalStrengthGsm cellSignalStrengthGsm = cellInfogsm.getCellSignalStrength();
+                            strength = String.valueOf(cellSignalStrengthGsm.getDbm());
+                            cellid=cellInfogsm.getCellIdentity().getCid();
+                        }else if(cellInfos.get(i) instanceof CellInfoLte){
+                            CellInfoLte cellInfoLte = (CellInfoLte) telephony.getAllCellInfo().get(0);
+                            CellSignalStrengthLte cellSignalStrengthLte = cellInfoLte.getCellSignalStrength();
+                            strength = String.valueOf(cellSignalStrengthLte.getDbm());
+                            cellid=cellInfoLte.getCellIdentity().getCi();
+                        }
+                        i=cellInfos.size();
+                    }
+                    }
+                    //System.out.println("Cell info "+aa+" has data: "+all.get(aa));
+                }
+
+            else {
+                System.out.println("Cell info is empty!");
+            }
+        } catch (SecurityException e){
+            System.out.println("Couldn't get COARSE LOCATION");
+        }
+        /*if (telephony.getPhoneType() == TelephonyManager.PHONE_TYPE_GSM) {
+            try {
+                final GsmCellLocation location = (GsmCellLocation) telephony.getCellLocation();
+                if (location != null) {
+                    System.out.println("LAC: " + location.getLac() + " CID: " + location.getCid());
+                }
+            }catch (SecurityException e) {
+                System.out.println("Can't get CELL ID");
+            }
+        }*/
         arOverlay = new AROverlay(this);
         mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
         List<Sensor> sensors = mSensorManager.getSensorList(Sensor.TYPE_ALL);
@@ -100,18 +155,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 defaultcameraid = xx;
             }
         }
-        coords.setText("Calculating position....");
+        coords.setText("Calculating position.... "+"\n CELL ID: "+cellid);
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         gps_enabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         if (!gps_enabled) {
-            coords.setText("Can't get location.GPS is disabled!");
+            coords.setText("Can't get location.GPS is disabled!"+"\n CELL ID: "+cellid);
         }
 
         try {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, my_minTime, 0,
                     locationListenerGps);
         } catch (SecurityException e) {
-            coords.setText("Can't get gps location. Check app permissions!");
+            coords.setText("Can't get gps location. Check app permissions!"+"\n CELL ID: "+cellid);
         }
     }
     @Override
@@ -279,7 +334,42 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
     LocationListener locationListenerGps = new LocationListener() {
         public void onLocationChanged(Location location) {
-            System.out.println("Calculating gps position...");
+            TelephonyManager telephony = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+            try {
+                List<CellInfo> cellInfos = telephony.getAllCellInfo();
+                if (!cellInfos.isEmpty()) {
+                    for (int i=0; i<cellInfos.size(); i++ ){
+                        if (cellInfos.get(i).isRegistered()){
+                            if(cellInfos.get(i) instanceof CellInfoWcdma){
+                                CellInfoWcdma cellInfoWcdma = (CellInfoWcdma) telephony.getAllCellInfo().get(0);
+                                CellSignalStrengthWcdma cellSignalStrengthWcdma = cellInfoWcdma.getCellSignalStrength();
+                                strength = String.valueOf(cellSignalStrengthWcdma.getDbm());
+                                cellid=cellInfoWcdma.getCellIdentity().getCid();
+                            }else if(cellInfos.get(i) instanceof CellInfoGsm){
+                                CellInfoGsm cellInfogsm = (CellInfoGsm) telephony.getAllCellInfo().get(0);
+                                CellSignalStrengthGsm cellSignalStrengthGsm = cellInfogsm.getCellSignalStrength();
+                                strength = String.valueOf(cellSignalStrengthGsm.getDbm());
+                                cellid=cellInfogsm.getCellIdentity().getCid();
+                            }else if(cellInfos.get(i) instanceof CellInfoLte){
+                                CellInfoLte cellInfoLte = (CellInfoLte) telephony.getAllCellInfo().get(0);
+                                CellSignalStrengthLte cellSignalStrengthLte = cellInfoLte.getCellSignalStrength();
+                                strength = String.valueOf(cellSignalStrengthLte.getDbm());
+                                cellid=cellInfoLte.getCellIdentity().getCi();
+                            }
+                            i=cellInfos.size();
+                        }
+                    }
+                    //System.out.println("Cell info "+aa+" has data: "+all.get(aa));
+                }
+
+                else {
+                    System.out.println("Cell info is empty!");
+                }
+            } catch (SecurityException e){
+                System.out.println("Couldn't get COARSE LOCATION");
+            }
+
+            System.out.println("Calculating gps position..."+"\n CELL ID: "+cellid);
             if (location!=null) {
                 synchronized(App.current_location_flag){
                                         App.current_location=location;
@@ -289,21 +379,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 x = location.getLatitude();
                 y = location.getLongitude();
                 z=location.getAltitude();
-                coords.setText("location (gps) : " + x + " " + y);
+                coords.setText("location (gps) : " + x + " " + y+"\n CELL ID: "+cellid);
 
             }
             else {
-                coords.setText("Calculating position...");
+                coords.setText("Calculating position..."+"\n CELL ID: "+cellid);
             }
         }
         public void onProviderDisabled(String provider) {
             System.out.println("We know "+provider+" is disabled in gps listener!");
-            coords.setText("Gps disabled, please enable it!");
+            coords.setText("Gps disabled, please enable it!"+"\n CELL ID: "+cellid);
         }
 
         public void onProviderEnabled(String provider) {
             System.out.println("Gps provider knows we enabled: "+provider);
-            coords.setText("Calculating position...");
+            coords.setText("Calculating position..."+"\n CELL ID: "+cellid);
         }
 
         public void onStatusChanged(String provider, int status, Bundle extras) {
