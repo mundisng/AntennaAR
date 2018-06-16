@@ -64,6 +64,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private long my_minTime;
     private Circle my_last_circle;
     private MapsActivityThread my_thread;
+    private LatLng highlighted_latlng;
+    private String highlighted_title;
     //private DatabaseAccess databaseAccess;
 
     @Override
@@ -210,6 +212,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 //last_loc_antennas_updated=my_last_known_loc;
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(last));
                 updateCamera(bearing);
+                BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher_roundantenna);
+                if(highlighted_latlng!=null){
+                    Marker marker=mMap.addMarker(new MarkerOptions().position(highlighted_latlng).icon(icon).title(highlighted_title));
+                    marker.showInfoWindow();
+                }
                 if(my_antennas!=null && !my_antennas.isEmpty()) {
                     int i = 0;
                     while (i < my_antennas.size()) {
@@ -217,8 +224,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                             ARCoord antenna_coord = my_antennas.get(i);
                             Location antenna_loc = antenna_coord.getLocation();
                             LatLng my_latlng = new LatLng(antenna_loc.getLatitude(), antenna_loc.getLongitude());
-                            BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher_roundantenna);
-                            mMap.addMarker(new MarkerOptions().position(my_latlng).icon(icon).title(antenna_coord.getName()));
+                            //BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher_roundantenna);
+                            if((highlighted_latlng==null) || !(my_latlng.equals(highlighted_latlng))) {
+                                mMap.addMarker(new MarkerOptions().position(my_latlng).icon(icon).title(antenna_coord.getName()));
+                            }
                         } catch (IndexOutOfBoundsException e) {
                             break;
                         }
@@ -301,6 +310,26 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+
+                // TODO Auto-generated method stub
+                highlighted_latlng=marker.getPosition();
+                highlighted_title = marker.getTitle();
+                return false;
+
+            }
+        });
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+
+                // TODO Auto-generated method stub
+                highlighted_latlng=null;
+
+            }
+        });
         mMap.moveCamera(CameraUpdateFactory.zoomTo(15));
         my_handler.postDelayed(updateMarker,0);
         // Add a marker in Sydney and move the camera
@@ -316,6 +345,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         //databaseAccess.close();
         super.onDestroy();
     }
+
 
 
     ////////////////////////////////////////////////////////////
