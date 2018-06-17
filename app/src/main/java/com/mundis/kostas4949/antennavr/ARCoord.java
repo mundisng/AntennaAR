@@ -6,13 +6,15 @@ import android.location.Location;
 public class ARCoord {
     Location location;
     String name;
+    double range;
 
-    public ARCoord(String name, double lat, double lon, double altitude) {
+    public ARCoord(String name, double lat, double lon, double altitude, double range) {
         this.name = name;
         location = new Location("ARPoint");
         location.setLatitude(lat);
         location.setLongitude(lon);
         location.setAltitude(altitude);
+        this.range=range;
     }
 
     public Location getLocation() {
@@ -22,6 +24,8 @@ public class ARCoord {
     public String getName() {
         return name;
     }
+
+    public double getRange() { return range; }
 
 
 }

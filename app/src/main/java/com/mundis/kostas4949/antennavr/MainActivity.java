@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private long my_minTime;
     private double my_radius;
     private int my_antenum;
+    private int my_range;
     //DatabaseAccess databaseAccess;
     private MainActivityThread my_thread;
     int defaultcameraid;
@@ -80,10 +81,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         String radiusstr = my_sharedPref.getString("pref_radius", "100");
         String antenumstr=my_sharedPref.getString("pref_antenum","5");
         String minTimestr = my_sharedPref.getString("pref_minTime", "50");
+        String rangestr= my_sharedPref.getString("pref_range","200");
         my_minTime=Long.parseLong(minTimestr);
         my_radius=Double.parseDouble(radiusstr);
         my_antenum=Integer.parseInt(antenumstr);
-        System.out.println("radius="+my_radius+" ,antenum="+my_antenum+", minTime="+my_minTime);
+        my_range=Integer.parseInt(rangestr);
+        if(my_range==0){
+            my_range=1;
+        }
+        System.out.println("radius="+my_radius+" ,antenum="+my_antenum+", minTime="+my_minTime+", range="+my_range);
         TelephonyManager telephony = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         try {
             List<CellInfo> cellInfos = telephony.getAllCellInfo();
@@ -172,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onStart(){
                 super.onStart();
-                my_thread=new MainActivityThread(my_radius,my_antenum);
+                my_thread=new MainActivityThread(my_radius,my_antenum,my_range);
                 if(my_thread!=null){
                         my_thread.start();
                     }

@@ -10,7 +10,7 @@
         android:key="pref_radius"
         android:title="@string/pref_radius"
         android:summary="@string/pref_radius_summ"
-        android:inputType="numberDecimal"
+        android:inputType="number"
         android:defaultValue="100" />
     <EditTextPreference
         android:key="pref_minTime"
@@ -18,4 +18,10 @@
         android:summary="@string/pref_minTime_summ"
         android:inputType="number"
         android:defaultValue="50" />
+    <EditTextPreference
+        android:key="pref_range"
+        android:title="@string/pref_range"
+        android:summary="@string/pref_range_summ"
+        android:inputType="number"
+        android:defaultValue="200" />
 </PreferenceScreen>

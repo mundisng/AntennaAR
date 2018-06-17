@@ -9,10 +9,12 @@ public class MainActivityThread extends Thread{
     volatile boolean is_Running=true;
     double my_radius;
     int antenum;
+    int range;
 
-    MainActivityThread(double my_radius,int antenum) {
+    MainActivityThread(double my_radius,int antenum,int range) {
         this.my_radius=my_radius;
         this.antenum=antenum;
+        this.range=range;
     }
 
     public void run() {
@@ -26,10 +28,10 @@ public class MainActivityThread extends Thread{
                     ArrayList<ARCoord> arPoints;
                     if (my_radius > 0 && antenum > 0) {
                         //arPoints=App.databaseAccess.getAllCellCoords();
-                        arPoints = App.databaseAccess.getAntennasWithinRadius(current_location.getLatitude(), current_location.getLongitude(), my_radius, antenum);
+                        arPoints = App.databaseAccess.getAntennasWithinRadius(current_location.getLatitude(), current_location.getLongitude(), my_radius, antenum,range);
                     } else if (my_radius > 0 && antenum == 0) {
                         //arPoints=App.databaseAccess.getAllCellCoords();
-                        arPoints = App.databaseAccess.getAntennasWithinRadius(current_location.getLatitude(), current_location.getLongitude(), my_radius);
+                        arPoints = App.databaseAccess.getAntennasWithinRadius(current_location.getLatitude(), current_location.getLongitude(), my_radius,range);
                     } else {
                         arPoints = null;
                     }

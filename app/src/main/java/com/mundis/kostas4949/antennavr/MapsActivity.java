@@ -62,6 +62,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     ArrayList<ARCoord> my_antennas;
     private double my_radius;
     private long my_minTime;
+    private int my_range;
     private Circle my_last_circle;
     private MapsActivityThread my_thread;
     private LatLng highlighted_latlng;
@@ -78,11 +79,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         SharedPreferences my_sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         String radiusstr = my_sharedPref.getString("pref_radius", "100");
         String minTimestr = my_sharedPref.getString("pref_minTime", "50");
+        String rangestr= my_sharedPref.getString("pref_range","200");
         //String minDistancestr=my_sharedPref.getString("pref_minDistance","1");
         my_minTime=Long.parseLong(minTimestr);
         //my_minTime=my_sharedPref.getLong("pref_minTime",50);
         //my_minDistance=my_sharedPref.getFloat("pref_minDistance",1);
         my_radius=Double.parseDouble(radiusstr);
+        my_range=Integer.parseInt(rangestr);
+        if(my_range==0){
+            my_range=1;
+        }
         //my_thread=new MapsActivityThread(my_radius);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         //////////////////////////////////////////////////
@@ -132,7 +138,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onStart(){
         super.onStart();
-        my_thread=new MapsActivityThread(my_radius);
+        my_thread=new MapsActivityThread(my_radius,my_range);
         if(my_thread!=null){
             my_thread.start();
         }
