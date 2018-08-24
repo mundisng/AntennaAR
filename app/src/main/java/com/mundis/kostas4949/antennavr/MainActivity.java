@@ -1,11 +1,9 @@
 package com.mundis.kostas4949.antennavr;
 
-import android.Manifest;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -15,7 +13,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.opengl.Matrix;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
@@ -28,16 +25,12 @@ import android.telephony.CellSignalStrengthGsm;
 import android.telephony.CellSignalStrengthLte;
 import android.telephony.CellSignalStrengthWcdma;
 import android.telephony.TelephonyManager;
-import android.telephony.gsm.GsmCellLocation;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SurfaceView;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
-import android.widget.Toast;
-import android.view.ViewGroup.LayoutParams;
-
 import java.util.List;
 
 
@@ -58,21 +51,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private SurfaceView surface_viewLayout;
     private ARCamera arCamera;
     private Camera camera;
-    TextView coords;//compa;
+    TextView coords;
     private long my_minTime;
     private double my_radius;
     private int my_antenum;
     private int my_range;
-    //DatabaseAccess databaseAccess;
     private MainActivityThread my_thread;
     int defaultcameraid;
     private int cellid;
     String strength;
-
-
-    private final static int REQUEST_CAMERA_PERMISSIONS_CODE = 11;
-    private final static int REQUEST_ACCESS_FINE_LOCATION_PERMISSIONS_CODE=15;
     Intent in;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,24 +78,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if(my_range==0){
             my_range=1;
         }
-        System.out.println("radius="+my_radius+" ,antenum="+my_antenum+", minTime="+my_minTime+", range="+my_range);
         TelephonyManager telephony = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         try {
-            List<CellInfo> cellInfos = telephony.getAllCellInfo();
+            List<CellInfo> cellInfos = telephony.getAllCellInfo(); //get connected cell info
             if (!cellInfos.isEmpty()) {
                 for (int i=0; i<cellInfos.size(); i++ ){
                     if (cellInfos.get(i).isRegistered()){
-                        if(cellInfos.get(i) instanceof CellInfoWcdma){
+                        if(cellInfos.get(i) instanceof CellInfoWcdma){  //if wcdma cell
                             CellInfoWcdma cellInfoWcdma = (CellInfoWcdma) telephony.getAllCellInfo().get(0);
                             CellSignalStrengthWcdma cellSignalStrengthWcdma = cellInfoWcdma.getCellSignalStrength();
                             strength = String.valueOf(cellSignalStrengthWcdma.getDbm());
                             cellid=cellInfoWcdma.getCellIdentity().getCid();
-                        }else if(cellInfos.get(i) instanceof CellInfoGsm){
+                        }else if(cellInfos.get(i) instanceof CellInfoGsm){ //if gsm cell
                             CellInfoGsm cellInfogsm = (CellInfoGsm) telephony.getAllCellInfo().get(0);
                             CellSignalStrengthGsm cellSignalStrengthGsm = cellInfogsm.getCellSignalStrength();
                             strength = String.valueOf(cellSignalStrengthGsm.getDbm());
                             cellid=cellInfogsm.getCellIdentity().getCid();
-                        }else if(cellInfos.get(i) instanceof CellInfoLte){
+                        }else if(cellInfos.get(i) instanceof CellInfoLte){ //if lte cell
                             CellInfoLte cellInfoLte = (CellInfoLte) telephony.getAllCellInfo().get(0);
                             CellSignalStrengthLte cellSignalStrengthLte = cellInfoLte.getCellSignalStrength();
                             strength = String.valueOf(cellSignalStrengthLte.getDbm());
@@ -115,37 +103,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         i=cellInfos.size();
                     }
                     }
-                    //System.out.println("Cell info "+aa+" has data: "+all.get(aa));
                 }
 
-            else {
-                System.out.println("Cell info is empty!");
-            }
         } catch (SecurityException e){
             System.out.println("Couldn't get COARSE LOCATION");
         }
-        /*if (telephony.getPhoneType() == TelephonyManager.PHONE_TYPE_GSM) {
-            try {
-                final GsmCellLocation location = (GsmCellLocation) telephony.getCellLocation();
-                if (location != null) {
-                    System.out.println("LAC: " + location.getLac() + " CID: " + location.getCid());
-                }
-            }catch (SecurityException e) {
-                System.out.println("Can't get CELL ID");
-            }
-        }*/
         arOverlay = new AROverlay(this);
         mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
-        List<Sensor> sensors = mSensorManager.getSensorList(Sensor.TYPE_ALL);
         mCompass=mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
-        if (mCompass==null || mCompass.getMinDelay()==0){
-            System.out.println("Going into compatibility mode");
-            rotation_compatibility=true;
+        if (mCompass==null || mCompass.getMinDelay()==0){    //if rotation_vector sensor doesn't exist on this phone
+            rotation_compatibility=true;    //set compatibility mode for sensors on this phone
             mCompass1=mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
             mCompass2=mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-        }
-        else {
-            System.out.println("Min delay:"+mCompass.getMinDelay());
         }
         surface_viewLayout=(SurfaceView) findViewById(R.id.surface_view);
         cameraContainerLayout = (FrameLayout) findViewById(R.id.camera_container_layout);
@@ -155,30 +124,29 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         arCamera=new ARCamera(this,surface_viewLayout);
         Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
         int numCams = Camera.getNumberOfCameras();
-        for (int xx = 0; xx < numCams; xx++) {
+        for (int xx = 0; xx < numCams; xx++) {  //Set default back facing camera to be used for AR
             Camera.getCameraInfo(xx, cameraInfo);
             if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
                 defaultcameraid = xx;
             }
         }
-        coords.setText("Calculating position.... "+"\n CELL ID: "+cellid);
+        coords.setText("Calculating position.... ");
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        gps_enabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        if (!gps_enabled) {
-            coords.setText("Can't get location.GPS is disabled!"+"\n CELL ID: "+cellid);
+        gps_enabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER); //check if gps is enabled
+        if (!gps_enabled) {  //if not, display message
+            coords.setText("Can't get location.GPS is disabled!");
         }
-
-        try {
+        try { //in any case, try to get location to check for app permissions
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, my_minTime, 0,
                     locationListenerGps);
         } catch (SecurityException e) {
-            coords.setText("Can't get gps location. Check app permissions!"+"\n CELL ID: "+cellid);
+            coords.setText("Can't get gps location. Check app permissions!");
         }
     }
     @Override
     public void onStart(){
                 super.onStart();
-                my_thread=new MainActivityThread(my_radius,my_antenum,my_range);
+                my_thread=new MainActivityThread(my_radius,my_antenum,my_range); //set up thread to make GUI more responsive
                 if(my_thread!=null){
                         my_thread.start();
                     }
@@ -237,15 +205,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onResume() {
         cameraContainerLayout.addView(arCamera);
-        System.out.println("WE RESUMED!");
         super.onResume();
         initCamera();
         initAROverlay();
-        if (!rotation_compatibility) {
+        if (!rotation_compatibility) { //if we don't use compatibility mode for sensors, use rotation_vector info
             mSensorManager.registerListener(this, mCompass, SensorManager.SENSOR_DELAY_FASTEST);
 
         }
-        else {
+        else {   //else use accelerometer and magnetometer as mCompass1 and mCompass2 respectively
             mSensorManager.registerListener(this, mCompass1,
                     SensorManager.SENSOR_DELAY_FASTEST);
             mSensorManager.registerListener(this, mCompass2,
@@ -256,13 +223,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onPause() {
         super.onPause();
-        mSensorManager.unregisterListener(this);
-        releaseCamera(); //prepei na kanei release thn kamera otan einai se pause, to sygkekrimeno einai akoma buggy
+        mSensorManager.unregisterListener(this); //release sensors on pause to save battery
+        releaseCamera();  //release camera on pause so it can be used by another app
         cameraContainerLayout.removeView(arCamera);
 
     }
 
-    public void initAROverlay() {
+    public void initAROverlay() {  //set up view to draw on camera preview
         if (arOverlay.getParent() != null) {
             ((ViewGroup) arOverlay.getParent()).removeView(arOverlay);
         }
@@ -271,26 +238,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
 
-    public void onSensorChanged(SensorEvent sEvent) {
-        if (rotation_compatibility) {
-            if (sEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+    public void onSensorChanged(SensorEvent sEvent) {  //if sensors change values(this also runs the first time sensors are set up)
+        if (rotation_compatibility) {   //if we are using sensors in compatibility mode
+            if (sEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {  //get value of accelerometer
                 System.arraycopy(sEvent.values, 0, mAccelerometerReading,
                         0, mAccelerometerReading.length);
 
 
-            } else if (sEvent.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
+            } else if (sEvent.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) { //get value of magnetometer
                 System.arraycopy(sEvent.values, 0, mMagnetometerReading,
                         0, mMagnetometerReading.length);
-
-
             }
             if (mSensorManager.getRotationMatrix(mRotationMatrix, null,
-                    mAccelerometerReading, mMagnetometerReading)) {
-                String bla = "";
-                for (int i = 0; i < mRotationMatrix.length; i++) {
-                    bla = bla + mRotationMatrix[i] + " ";
-
-                }
+                    mAccelerometerReading, mMagnetometerReading)) {   //combine them to get roation
                 float[] projectionMatrix = new float[16];
                 float[] rotatedProjectionMatrix = new float[16];
                 if (arCamera != null) {
@@ -301,16 +261,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             }
         }
-        else {
-            if (sEvent.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
+        else {  //if we are not using sensors in compatibility mode
+            if (sEvent.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) { //get the rotation_vector sensor
                 float[] rotationMatrixFromVector = new float[16];
                 float[] projectionMatrix = new float[16];
                 float[] rotatedProjectionMatrix = new float[16];
                 SensorManager.getRotationMatrixFromVector(rotationMatrixFromVector, sEvent.values); //Get rotation of cell phone
-                String bla = "";
-                for (int i = 0; i < rotationMatrixFromVector.length; i++) {
-                    bla = bla + rotationMatrixFromVector[i] + " ";
-                }
                 if (arCamera != null) {
                     projectionMatrix = arCamera.getProjectionMatrix();   //Get dimensions of camera
                 }
@@ -323,83 +279,40 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private void releaseCamera() {
         if(camera != null) {
-            //camera.setPreviewCallback(null);
-            //camera.stopPreview();
             arCamera.setCamera(null);
             camera.release();
             camera = null;
         }
     }
 
-    private void initCamera() {
-        System.out.println("Opening camera with id: "+defaultcameraid);
+    private void initCamera() {  //Opening default camera
         camera=Camera.open();
         arCamera.setCamera(camera);
-        System.out.println("Opened and set camera in main thread");
 
     }
-    LocationListener locationListenerGps = new LocationListener() {
+    LocationListener locationListenerGps = new LocationListener() {  //Listener for GPS location
         public void onLocationChanged(Location location) {
-            TelephonyManager telephony = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-            try {
-                List<CellInfo> cellInfos = telephony.getAllCellInfo();
-                if (!cellInfos.isEmpty()) {
-                    for (int i=0; i<cellInfos.size(); i++ ){
-                        if (cellInfos.get(i).isRegistered()){
-                            if(cellInfos.get(i) instanceof CellInfoWcdma){
-                                CellInfoWcdma cellInfoWcdma = (CellInfoWcdma) telephony.getAllCellInfo().get(0);
-                                CellSignalStrengthWcdma cellSignalStrengthWcdma = cellInfoWcdma.getCellSignalStrength();
-                                strength = String.valueOf(cellSignalStrengthWcdma.getDbm());
-                                cellid=cellInfoWcdma.getCellIdentity().getCid();
-                            }else if(cellInfos.get(i) instanceof CellInfoGsm){
-                                CellInfoGsm cellInfogsm = (CellInfoGsm) telephony.getAllCellInfo().get(0);
-                                CellSignalStrengthGsm cellSignalStrengthGsm = cellInfogsm.getCellSignalStrength();
-                                strength = String.valueOf(cellSignalStrengthGsm.getDbm());
-                                cellid=cellInfogsm.getCellIdentity().getCid();
-                            }else if(cellInfos.get(i) instanceof CellInfoLte){
-                                CellInfoLte cellInfoLte = (CellInfoLte) telephony.getAllCellInfo().get(0);
-                                CellSignalStrengthLte cellSignalStrengthLte = cellInfoLte.getCellSignalStrength();
-                                strength = String.valueOf(cellSignalStrengthLte.getDbm());
-                                cellid=cellInfoLte.getCellIdentity().getCi();
-                            }
-                            i=cellInfos.size();
-                        }
-                    }
-                    //System.out.println("Cell info "+aa+" has data: "+all.get(aa));
-                }
-
-                else {
-                    System.out.println("Cell info is empty!");
-                }
-            } catch (SecurityException e){
-                System.out.println("Couldn't get COARSE LOCATION");
-            }
-
-            System.out.println("Calculating gps position..."+"\n CELL ID: "+cellid);
             if (location!=null) {
-                synchronized(App.current_location_flag){
-                                        App.current_location=location;
-                                    }
-                                arOverlay.invalidate();
-                //arOverlay.updateCurrentLocation(location);
+                synchronized(App.current_location_flag) {
+                    App.current_location = location;
+                }
+                arOverlay.invalidate();
                 x = location.getLatitude();
                 y = location.getLongitude();
                 z=location.getAltitude();
-                coords.setText("location (gps) : " + x + " " + y+"\n CELL ID: "+cellid);
+                coords.setText("location (gps) : " + x + " " + y);
 
             }
             else {
-                coords.setText("Calculating position..."+"\n CELL ID: "+cellid);
+                coords.setText("Calculating position...");
             }
         }
-        public void onProviderDisabled(String provider) {
-            System.out.println("We know "+provider+" is disabled in gps listener!");
-            coords.setText("Gps disabled, please enable it!"+"\n CELL ID: "+cellid);
+        public void onProviderDisabled(String provider) {  //If we disable GPS
+            coords.setText("Gps disabled, please enable it!");
         }
 
-        public void onProviderEnabled(String provider) {
-            System.out.println("Gps provider knows we enabled: "+provider);
-            coords.setText("Calculating position..."+"\n CELL ID: "+cellid);
+        public void onProviderEnabled(String provider) { //If we enable GPS
+            coords.setText("Calculating position...");
         }
 
         public void onStatusChanged(String provider, int status, Bundle extras) {

@@ -3,7 +3,7 @@ package com.mundis.kostas4949.antennavr;
 import android.location.Location;
 
 
-public class ARCoord {
+public class ARCoord { //class used by cell tower points and what data every point holds
     Location location;
     String name;
     double range;

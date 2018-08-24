@@ -8,14 +8,9 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.opengl.Matrix;
 import android.view.View;
-
-
-
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,24 +22,13 @@ public class AROverlay extends View {
     private float[] rotatedProjectionMatrix = new float[16];
     private Bitmap my_bitmap;
 
-    public AROverlay(Context context/*,double my_radius,int antenum*/) {
+    public AROverlay(Context context) {
         super(context);
-
         this.context = context;
         Resources res = getResources();
-        my_bitmap = BitmapFactory.decodeResource(res, R.mipmap.ic_launcher_roundantenna);
-        System.out.println("We got in AROverlay");
+        my_bitmap = BitmapFactory.decodeResource(res, R.mipmap.ic_launcher_roundantenna);  //use this icon for cell towers
     }
 
-    public void openDB(){
-      //  databaseAccess = DatabaseAccess.getInstance(this.context);  //kane comment oles aytes tis grammes ama sou kollaei to kinhto
-       // System.out.println("Opening database!");
-       // databaseAccess.open();
-    }
-
-    public void closeDB(){
-       // databaseAccess.close();
-    }
     public void updateRotatedProjectionMatrix(float[] rotatedProjectionMatrix) {
         this.rotatedProjectionMatrix = rotatedProjectionMatrix;
         this.invalidate();
@@ -55,7 +39,7 @@ public class AROverlay extends View {
         super.onDraw(canvas);
         Location current_location;
         synchronized(App.current_location_flag){
-            if(App.current_location==null){
+            if(App.current_location==null){    //If we don't have a current location don't draw anything.
                 return;
             }
             else{
@@ -64,41 +48,33 @@ public class AROverlay extends View {
         }
         List<ARCoord> arPoints;
         synchronized(App.my_antennas_flag){
-            if(App.my_antennas==null || App.my_antennas.isEmpty()){
+            if(App.my_antennas==null || App.my_antennas.isEmpty()){   //If we don't have any antennas (arpoints) don't draw anything.
                 return;
             }
             else{
                 arPoints=App.my_antennas;
             }
         }
-        final int radius = 30;
-        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);  //Set drawing options
         paint.setStyle(Paint.Style.FILL);
         paint.setColor(Color.WHITE);
          paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
          paint.setTextSize(60);
 
-        for (int i = 0; i < arPoints.size(); i ++) {
-            System.out.println("Drawing "+arPoints.size()+" points.");
-            float[] currentLocationInECEF = LocationConverter.WGS84toECEF(current_location);
-           // System.out.println("Location In ECEF: x: "+currentLocationInECEF[0]+" y: "+currentLocationInECEF[1]+" z: "+currentLocationInECEF[2]);
-            float[] pointInECEF = LocationConverter.WGS84toECEF(arPoints.get(i).getLocation());
-           // System.out.println("Location of Point in ECEF: x: "+pointInECEF[0]+" y: "+pointInECEF[1]+" z: "+pointInECEF[2]);
-            float[] pointInENU = LocationConverter.ECEFtoENU(current_location, currentLocationInECEF, pointInECEF);
-           // System.out.println("Position in ENU: East: "+pointInENU[0]+" North: "+pointInENU[1]+"Up: "+pointInENU[2]);
+        for (int i = 0; i < arPoints.size(); i ++) {     //Drawing the arpoints on AR screen
+            float[] currentLocationInECEF = LocationConverter.WGS84toECEF(current_location); //Convert our current location to ECEF
+            float[] pointInECEF = LocationConverter.WGS84toECEF(arPoints.get(i).getLocation()); //Convert arpoint to ECEF
+            float[] pointInENU = LocationConverter.ECEFtoENU(current_location, currentLocationInECEF, pointInECEF); //Get the ENU of arpoint having the phone location as reference point
             float[] cameraCoordinateVector = new float[4];
-            Matrix.multiplyMV(cameraCoordinateVector, 0, rotatedProjectionMatrix, 0, pointInENU, 0);
+            Matrix.multiplyMV(cameraCoordinateVector, 0, rotatedProjectionMatrix, 0, pointInENU, 0); //Multiply the ENU of arpoint with the camera rotated projection matrix(based on camera projection and sensors for phone rotation).
 
-        // cameraCoordinateVector[2] is z, that always less than 0 to display on right position
+        // cameraCoordinateVector[2] is z, that is always less than 0 to display on right position
         // if z > 0, the point will display on the opposite
         if (cameraCoordinateVector[2] < 0) {
-           // System.out.println("Did we get in here?");
-         float x  = (0.5f + cameraCoordinateVector[0]/cameraCoordinateVector[3]) * canvas.getWidth();
+         float x  = (0.5f + cameraCoordinateVector[0]/cameraCoordinateVector[3]) * canvas.getWidth(); //Draw the arpoint based on canvas size.
          float y = (0.5f - cameraCoordinateVector[1]/cameraCoordinateVector[3]) * canvas.getHeight();
-        // System.out.println("DRAWING: X: "+x+" Y: "+y);
-        //canvas.drawCircle(x, y, radius, paint);
-            canvas.drawBitmap(my_bitmap,x,y,paint);
-         canvas.drawText(arPoints.get(i).getName(), x - (30 * arPoints.get(i).getName().length() / 2), y - 80, paint);
+         canvas.drawBitmap(my_bitmap,x,y,paint);
+         canvas.drawText(arPoints.get(i).getName(), x - (30 * arPoints.get(i).getName().length() / 2), y - 80, paint);  //Draw arpoint name
          }
         }
 

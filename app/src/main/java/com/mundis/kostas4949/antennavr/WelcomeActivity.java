@@ -25,13 +25,11 @@ public class WelcomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_welcome);
         my_toolbar = (Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(my_toolbar);
-        requestPermissions();
-        if (hascamerapermission && haslocationpermission) {
-            System.out.println("We got in here with all the permissions!");
+        requestPermissions(); //check if we have all permissions
+        if (hascamerapermission && haslocationpermission) { //if we have all permissions
             new Handler().postDelayed(new Runnable() {
                 @Override
-                public void run() {
-                    System.out.println("WE GOT INTO FIRST RUN!");
+                public void run() { //run the app
                     SharedPreferences sharedPref = getSharedPreferences(getString(R.string.pref_file_key), Context.MODE_PRIVATE);
                     cameramode_flag = sharedPref.getBoolean(getString(R.string.cameramode), true);
                     if (cameramode_flag) {
@@ -46,34 +44,33 @@ public class WelcomeActivity extends AppCompatActivity {
             }, TIME_OUT);
         }
         else {
-            System.out.println("We are in the not accepted permissions");
         }
     }
 
 
-    public void requestPermissions(){
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+    public void requestPermissions(){   //check and request the permissions needed
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){ //check if we are using a mobile phone with android marshmallow or newer
             if (this.checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
-                if (this.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){  //8eloume kai ta 2
+                if (this.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){  //if we don't have access for camera or location, request both
                     this.requestPermissions(new String[]{Manifest.permission.CAMERA,Manifest.permission.ACCESS_FINE_LOCATION}, 11);
                 }
                 else{
-                    this.requestPermissions(new String[]{Manifest.permission.CAMERA}, 11); //mono kamera
+                    this.requestPermissions(new String[]{Manifest.permission.CAMERA}, 11); //if we only need camera permission
                     haslocationpermission=true;
                 }
             }
             else {
                 if (this.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-                    this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 11); //mono location
+                    this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 11); //if we only need location permission
                     hascamerapermission=true;
                 }
                 else {
-                    hascamerapermission=true;    //ok kai ta 2
+                    hascamerapermission=true;    //if we have both
                     haslocationpermission=true;
                 }
             }
         }
-        else{
+        else{ //if we are using phone before android M, we have both permissions
             hascamerapermission=true;
             haslocationpermission=true;
         }
@@ -82,12 +79,12 @@ public class WelcomeActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults){
+                                           String permissions[], int[] grantResults){  //check results of the permissions requested
 
         switch (requestCode){
             case 11:{
-                if (grantResults.length > 0) {
-                    for (int i=0; i<permissions.length; i++){
+                if (grantResults.length > 0) { //if we got at least 1 permission granted
+                    for (int i=0; i<permissions.length; i++){ //check if we got both permissions needed granted
                         if (permissions[i].equals(Manifest.permission.ACCESS_FINE_LOCATION)){
                             if (grantResults[i] == PackageManager.PERMISSION_GRANTED){
                                 haslocationpermission=true;
@@ -99,11 +96,10 @@ public class WelcomeActivity extends AppCompatActivity {
                             }
                         }
                     }
-                    if (hascamerapermission && haslocationpermission){
+                    if (hascamerapermission && haslocationpermission){ //if we did get all permissions granted, run app
                         new Handler().postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                System.out.println("WE GOT INTO SECOND RUN!");
                                 SharedPreferences sharedPref = getSharedPreferences(getString(R.string.pref_file_key), Context.MODE_PRIVATE);
                                 cameramode_flag = sharedPref.getBoolean(getString(R.string.cameramode), true);
                                 if (cameramode_flag) {
@@ -117,14 +113,14 @@ public class WelcomeActivity extends AppCompatActivity {
                             }
                         }, TIME_OUT);
                     }
-                    else {
+                    else {  //else show warning message and don't run app
                         AlertDialog alertDialog = new AlertDialog.Builder(this).create();
                         alertDialog.setTitle("Permissions");
                         alertDialog.setMessage("This app doesn't work without the appropriate permissions!");
                         alertDialog.show();
                     }
                 }
-                                        }
+            }
 
         }
 
