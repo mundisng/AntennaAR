@@ -13,9 +13,7 @@ import android.opengl.Matrix;
 import android.view.View;
 import java.util.List;
 
-/**
- * Created by kostas4949 on 24/4/2017.
- */
+
 
 public class AROverlay extends View {
     Context context;

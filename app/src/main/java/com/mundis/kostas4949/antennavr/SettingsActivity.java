@@ -2,15 +2,12 @@ package com.mundis.kostas4949.antennavr;
 
 import android.content.ComponentName;
 import android.content.Intent;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
-public class SettingsActivity extends AppCompatActivity {
+public class SettingsActivity extends AppCompatActivity { //enables back button for the settings view
     Toolbar my_toolbar;
     private ComponentName parent;
     @Override
@@ -19,11 +16,10 @@ public class SettingsActivity extends AppCompatActivity {
         parent = getIntent().getExtras().getParcelable("EXTRA_PARENT_COMPONENT_NAME");
         setContentView(R.layout.activity_settings);
 
-        // my_child_toolbar is defined in the layout file
         my_toolbar=(Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(my_toolbar);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true); //enable back button
 
 
         getFragmentManager().beginTransaction()
@@ -32,21 +28,21 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onBackPressed() {
+    public void onBackPressed() { //when device's back button is pressed
         final Intent parentIntent = new Intent();
         parentIntent.setComponent(parent);
-        startActivity(parentIntent);
+        startActivity(parentIntent); //start parent and finish current activity
         finish();
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case android.R.id.home:
+            case android.R.id.home: //when app's back button is pressed
                 if (parent != null) {
                     final Intent parentIntent = new Intent();
                     parentIntent.setComponent(parent);
-                    startActivity(parentIntent);
+                    startActivity(parentIntent); //start parent and finish current activity
                     finish();
                     return true;
                 }

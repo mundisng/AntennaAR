@@ -6,7 +6,7 @@ import android.location.Location;
 import java.util.ArrayList;
 
 
-public class App extends Application {
+public class App extends Application { //Aplication class for singleton access
     public static DatabaseAccess databaseAccess;
     public static volatile ArrayList<ARCoord> my_antennas;
     public static volatile Location current_location;
@@ -16,9 +16,8 @@ public class App extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        System.out.println("APP CREATED");
         databaseAccess=DatabaseAccess.getInstance(getApplicationContext());
-        databaseAccess.open();
+        databaseAccess.open(); //open the antenna database
 
     }
 }

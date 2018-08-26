@@ -18,13 +18,13 @@ public class MapsActivityThread extends Thread{
         try {
             while (is_Running) {
                 Location current_location;
-                synchronized (App.current_location_flag) {
+                synchronized (App.current_location_flag) { //singleton access to current location
                     current_location=App.current_location;
                 }
                 if (current_location != null) {
-                    ArrayList<ARCoord> arPoints;
+                    ArrayList<ARCoord> arPoints; // get antennas from database
                     arPoints= App.databaseAccess.getAntennasWithinRadius(current_location.getLatitude(),current_location.getLongitude(),my_radius,range);
-                    synchronized (App.my_antennas_flag) {
+                    synchronized (App.my_antennas_flag) { //synchronized renew of the antenna list
                         App.my_antennas = arPoints;
                     }
                 }

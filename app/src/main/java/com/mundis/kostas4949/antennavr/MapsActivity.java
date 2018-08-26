@@ -39,19 +39,17 @@ import java.util.ArrayList;
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, SensorEventListener {
     final int MARKER_UPDATE_INTERVAL = 2000; /* milliseconds */
     Handler my_handler = new Handler();
-    private Marker my_last_known_loc,last_loc_antennas_updated;
-    private Context my_context;
+    private Marker my_last_known_loc;
 
     private Toolbar my_toolbar;
     private GoogleMap mMap=null;
     boolean gps_enabled = false;
     LocationManager locationManager;
-    double x,y,z;
+    double x,y;
 
     private SensorManager mSensorManager;
     private Sensor mCompass,mCompass1,mCompass2;
     boolean rotation_compatibility=false;
-    private boolean ble;
     private final float[] mAccelerometerReading = new float[3];
     private final float[] mMagnetometerReading = new float[3];
     private final float[] mRotationMatrix = new float[16];
@@ -67,37 +65,28 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private MapsActivityThread my_thread;
     private LatLng highlighted_latlng;
     private String highlighted_title;
-    //private DatabaseAccess databaseAccess;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //databaseAccess=DatabaseAccess.getInstance(this);
-        //databaseAccess.open();
-        my_context=this;
         setContentView(R.layout.activity_maps);
+        //get saved values from sharedpreferences
         SharedPreferences my_sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         String radiusstr = my_sharedPref.getString("pref_radius", "100");
         String minTimestr = my_sharedPref.getString("pref_minTime", "50");
         String rangestr= my_sharedPref.getString("pref_range","200");
-        //String minDistancestr=my_sharedPref.getString("pref_minDistance","1");
         my_minTime=Long.parseLong(minTimestr);
-        //my_minTime=my_sharedPref.getLong("pref_minTime",50);
-        //my_minDistance=my_sharedPref.getFloat("pref_minDistance",1);
         my_radius=Double.parseDouble(radiusstr);
         my_range=Integer.parseInt(rangestr);
         if(my_range==0){
             my_range=1;
         }
-        //my_thread=new MapsActivityThread(my_radius);
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        //////////////////////////////////////////////////
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         gps_enabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         if (!gps_enabled) {
             Toast.makeText(getApplicationContext(), "Can't get location.GPS is disabled!", Toast.LENGTH_SHORT).show();
         }
-        try { //System.out.println("Start: if (gps_enabled) is true");
+        try {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, my_minTime, 0, locationListenerGps);
         } catch (SecurityException e) {
             Toast.makeText(getApplicationContext(),"Can't get gps location(security exception). Check your settings!",Toast.LENGTH_SHORT).show();
@@ -119,26 +108,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
 
-        //////////////////////////FROM DATABASE///////////////////////////
-        //DatabaseAccess databaseAccess = DatabaseAccess.getInstance(this);
-        //databaseAccess.open();
-        //my_antennas= databaseAccess.getAllCellCoords();
-        //databaseAccess.close();
-        ////////////////////////MANUAL////////////////////////////////////
-        //my_antennas=new ArrayList<>();
-        //my_antennas.add(new ARCoord("coconut",24.25,42.54,0));
-        //my_antennas.add(new ARCoord("my",21.5,42.54,0));
-        //my_antennas.add(new ARCoord("name",14.25,42.54,0));
-        //my_antennas.add(new ARCoord("is",44.25,42.54,0));
-        //my_antennas.add(new ARCoord("what",32.25,42.54,0));
-        /////////////////////END///////////////////////////////////////
         mapFragment.getMapAsync(this);
     }
 
     @Override
     public void onStart(){
         super.onStart();
-        my_thread=new MapsActivityThread(my_radius,my_range);
+        my_thread=new MapsActivityThread(my_radius,my_range); //set up thread to make GUI more responsive
         if(my_thread!=null){
             my_thread.start();
         }
@@ -147,7 +123,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onStop(){
         super.onStop();
-        if (my_thread != null) {
+        if (my_thread != null) { //stop the running thread
             my_thread.stop_running();
             my_thread.interrupt();
         }
@@ -171,21 +147,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         switch (item.getItemId()) {
             case R.id.action_settings:
                 // User chose the "Settings" item, show the app settings UI...
-                //Toast.makeText(MainActivity.this, "Settings Pressed MAIN", Toast.LENGTH_SHORT).show();
                 Intent i = new Intent(this, SettingsActivity.class);
-                //i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 i.putExtra("EXTRA_PARENT_COMPONENT_NAME", new ComponentName(this, MapsActivity.class));
                 startActivity(i);
                 finish();
                 return true;
             case R.id.action_mode:
-                //Toast.makeText(getApplicationContext(), "Clicked Camera Icon", Toast.LENGTH_SHORT).show();
+                //change to camera mode and save mode value in sharedpreferences
                 SharedPreferences sharedPref = getSharedPreferences(getString(R.string.pref_file_key), Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPref.edit();
                 editor.putBoolean(getString(R.string.cameramode), true);
                 editor.commit();
                 Intent j = new Intent(MapsActivity.this, MainActivity.class);
-                //j.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(j);
                 finish();
                 return true;
@@ -200,22 +173,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     Runnable updateMarker = new Runnable() {
         @Override
-        public void run() {
-            synchronized(App.my_antennas_flag){
+        public void run() { //handler for the update of the map
+            synchronized(App.my_antennas_flag){ //synchronized retrieval of antenna list
                 my_antennas=App.my_antennas;
             }
-            System.out.println("updatemarker");
             if(my_last_known_loc!=null){
                 LatLng last=my_last_known_loc.getPosition();
-                //Double my_lat=last.latitude;
-                //Double my_long=last.longitude;
-                //databaseAccess = DatabaseAccess.getInstance(my_context);
-                //my_antennas=App.databaseAccess.getAllCellCoords();
-                //my_antennas= App.databaseAccess.getAntennasWithinRadius(my_lat,my_long,my_radius);
-                mMap.clear();
+                mMap.clear(); //clear the map
                 my_last_known_loc=mMap.addMarker(new MarkerOptions().position(last).title("You are here!"));
                 my_last_circle=mMap.addCircle(new CircleOptions().center(last).radius(my_radius).strokeWidth(0f).fillColor(0x550000FF));
-                //last_loc_antennas_updated=my_last_known_loc;
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(last));
                 updateCamera(bearing);
                 BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher_roundantenna);
@@ -225,12 +191,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
                 if(my_antennas!=null && !my_antennas.isEmpty()) {
                     int i = 0;
-                    while (i < my_antennas.size()) {
+                    while (i < my_antennas.size()) { //add antennas on map
                         try {
                             ARCoord antenna_coord = my_antennas.get(i);
                             Location antenna_loc = antenna_coord.getLocation();
                             LatLng my_latlng = new LatLng(antenna_loc.getLatitude(), antenna_loc.getLongitude());
-                            //BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher_roundantenna);
                             if((highlighted_latlng==null) || !(my_latlng.equals(highlighted_latlng))) {
                                 mMap.addMarker(new MarkerOptions().position(my_latlng).icon(icon).title(antenna_coord.getName()));
                             }
@@ -240,65 +205,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         i++;
                     }
                 }
-                /*if(last_loc_antennas_updated==null){
-                    last_loc_antennas_updated=my_last_known_loc;
-                    LatLng last=my_last_known_loc.getPosition();
-                    Double my_lat=last.latitude;
-                    Double my_long=last.longitude;
-                    DatabaseAccess databaseAccess = DatabaseAccess.getInstance(my_context);
-                    databaseAccess.open();
-                    my_antennas= databaseAccess.getAntennasWithinRadius(my_lat,my_long,my_radius);
-                    databaseAccess.close();
-                    if(my_antennas!=null && !my_antennas.isEmpty()) {
-                        int i = 0;
-                        while (i < my_antennas.size()) {
-                            try {
-                                ARCoord antenna_coord = my_antennas.get(i);
-                                Location antenna_loc = antenna_coord.getLocation();
-                                LatLng my_latlng = new LatLng(antenna_loc.getLatitude(), antenna_loc.getLongitude());
-                                BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher_roundantenna);
-                                mMap.addMarker(new MarkerOptions().position(my_latlng).icon(icon).title(antenna_coord.getName()));
-                            } catch (IndexOutOfBoundsException e) {
-                                break;
-                            }
-                            i++;
-                        }
-                    }
-                }
-                else{
-                    LatLng last=my_last_known_loc.getPosition();
-                    LatLng updated=last_loc_antennas_updated.getPosition();
-                    if(((last.latitude > updated.latitude+0.01) || (last.latitude<updated.latitude-0.01))&&((last.longitude>
-                        updated.longitude+0.01)||(last.longitude<updated.longitude-0.01))){
-                        mMap.clear();
-                        my_last_known_loc=mMap.addMarker(new MarkerOptions().position(last).title("You are here!"));
-                        my_last_circle=mMap.addCircle(new CircleOptions().center(last).radius(my_radius).strokeWidth(0f).fillColor(0x550000FF));
-                        last_loc_antennas_updated=my_last_known_loc;
-                        mMap.moveCamera(CameraUpdateFactory.newLatLng(last));
-                        updateCamera(bearing);
-                        Double my_lat=last.latitude;
-                        Double my_long=last.longitude;
-                        DatabaseAccess databaseAccess = DatabaseAccess.getInstance(my_context);
-                        databaseAccess.open();
-                        my_antennas= databaseAccess.getAntennasWithinRadius(my_lat,my_long,my_radius);
-                            databaseAccess.close();
-                        if(my_antennas!=null && !my_antennas.isEmpty()) {
-                            int i = 0;
-                            while (i < my_antennas.size()) {
-                                try {
-                                    ARCoord antenna_coord = my_antennas.get(i);
-                                    Location antenna_loc = antenna_coord.getLocation();
-                                    LatLng my_latlng = new LatLng(antenna_loc.getLatitude(), antenna_loc.getLongitude());
-                                    BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher_roundantenna);
-                                    mMap.addMarker(new MarkerOptions().position(my_latlng).icon(icon).title(antenna_coord.getName()));
-                                } catch (IndexOutOfBoundsException e) {
-                                    break;
-                                }
-                                i++;
-                            }
-                        }
-                    }
-                }*/
             }
             my_handler.postDelayed(this, MARKER_UPDATE_INTERVAL);
         }
@@ -307,11 +213,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -320,7 +221,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public boolean onMarkerClick(Marker marker) {
 
-                // TODO Auto-generated method stub
                 highlighted_latlng=marker.getPosition();
                 highlighted_title = marker.getTitle();
                 return false;
@@ -331,82 +231,45 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onMapClick(LatLng latLng) {
 
-                // TODO Auto-generated method stub
                 highlighted_latlng=null;
 
             }
         });
         mMap.moveCamera(CameraUpdateFactory.zoomTo(15));
         my_handler.postDelayed(updateMarker,0);
-        // Add a marker in Sydney and move the camera
-        //LatLng myloc = new LatLng(x, y);
-        //mMap.addMarker(new MarkerOptions().position(myloc).title("You are here!"));
-        //mMap.moveCamera(CameraUpdateFactory.newLatLng(myloc));
-        //updateCameraBearing(mMap,rotation_matrix);
     }
 
     @Override
     protected void onDestroy() {
         my_handler.removeCallbacks(updateMarker);
-        //databaseAccess.close();
         super.onDestroy();
     }
 
 
 
-    ////////////////////////////////////////////////////////////
-
-    private void updateCameraBearing(GoogleMap googleMap, float bearing) {
-        if ( googleMap == null) return;
-        CameraPosition camPos = CameraPosition
-                .builder(
-                        googleMap.getCameraPosition() // current Camera
-                )
-                .bearing(bearing)
-                .build();
-        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(camPos));
-    }
-
-    private void updateCamera(float bearing) {
+    private void updateCamera(float bearing) { //update camera bearing
         if(mMap!=null){
         CameraPosition oldPos = mMap.getCameraPosition();
 
         CameraPosition pos = CameraPosition.builder(oldPos).bearing(bearing).build();
         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(pos));}
         else{
-            System.out.println("mMap BEARING NULLERINO");
+            System.out.println("mMap BEARING NULL");
         }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if (!rotation_compatibility) {
-            ble = mSensorManager.registerListener(this, mCompass, SensorManager.SENSOR_DELAY_FASTEST);
+        if (!rotation_compatibility) { //if we don't use compatibility mode for sensors, use rotation_vector info
+            mSensorManager.registerListener(this, mCompass, SensorManager.SENSOR_DELAY_FASTEST);
 
-            if (ble == true) {
-                System.out.println("Why is is true?");
-            } else {
-                System.out.println("ha ha,false!");
-            }
         }
-        else {
-            ble=mSensorManager.registerListener(this, mCompass1,
+        else { //else use accelerometer and magnetometer as mCompass1 and mCompass2 respectively
+            mSensorManager.registerListener(this, mCompass1,
                     SensorManager.SENSOR_DELAY_FASTEST);
-            if (ble==true){
-                System.out.println("Why is is true?1");
-            }
-            else {
-                System.out.println("ha ha,false!1");
-            }
-            ble=mSensorManager.registerListener(this, mCompass2,
+            mSensorManager.registerListener(this, mCompass2,
                     SensorManager.SENSOR_DELAY_FASTEST);
-            if (ble==true){
-                System.out.println("Why is is true?2");
-            }
-            else {
-                System.out.println("ha ha,false!2");
-            }
 
         }
     }
@@ -414,7 +277,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onPause() {
         super.onPause();
-        mSensorManager.unregisterListener(this);
+        mSensorManager.unregisterListener(this); //release sensors on pause to save battery
     }
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
@@ -433,8 +296,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     mAccelerometerReading, mMagnetometerReading)) {
                 SensorManager.getOrientation(mRotationMatrix, orientation);
                 bearing = (float)Math.toDegrees(orientation[0]) + mDeclination;
-                //updateCameraBearing(mMap,bearing);
-                //updateCamera(bearing);
                 rotation_matrix=mRotationMatrix;
             }
         }
@@ -443,7 +304,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 SensorManager.getRotationMatrixFromVector(rotationMatrixFromVector, sEvent.values); //Get rotation of cell phone
                 SensorManager.getOrientation(rotationMatrixFromVector, orientation);
                 bearing = (float)Math.toDegrees(orientation[0]) + mDeclination;
-                //updateCamera(bearing);
                 rotation_matrix=rotationMatrixFromVector;
             }
         }
@@ -453,7 +313,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         public void onLocationChanged(Location location) {
             System.out.println("Calculating gps position...");
             if (location != null) {
-                synchronized(App.current_location_flag){
+                synchronized(App.current_location_flag){ //synchronized retrieval of current location
                     App.current_location=location;
                 }
                 field = new GeomagneticField(
@@ -466,11 +326,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 y=location.getLongitude();
                 // getDeclination returns degrees
                 mDeclination = field.getDeclination();
-                //Toast.makeText(getApplicationContext(),"location (gps) : " + x + " " + y + "and altitude: " + z,Toast.LENGTH_SHORT).show();
-                //System.out.println("(GPS)x is: " + x + "y is: " + y);
 
             } else {
-                //gps_data=0;
                 Toast.makeText(getApplicationContext(), "Calculating Position!", Toast.LENGTH_SHORT).show();
             }
             if(mMap!=null){
@@ -488,7 +345,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 updateCamera(bearing);
             }
             else{
-                System.out.println("mMap NULLERINO");
+                System.out.println("mMap NULL");
             }
         }
 

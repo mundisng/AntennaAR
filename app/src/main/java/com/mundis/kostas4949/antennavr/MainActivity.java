@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        SharedPreferences my_sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences my_sharedPref = PreferenceManager.getDefaultSharedPreferences(this); //get settings values
         String radiusstr = my_sharedPref.getString("pref_radius", "100");
         String antenumstr=my_sharedPref.getString("pref_antenum","5");
         String minTimestr = my_sharedPref.getString("pref_minTime", "50");
@@ -116,6 +116,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             mCompass1=mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
             mCompass2=mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         }
+        //set up GUI
         surface_viewLayout=(SurfaceView) findViewById(R.id.surface_view);
         cameraContainerLayout = (FrameLayout) findViewById(R.id.camera_container_layout);
         coords = (TextView) findViewById(R.id.tv_current_location);
@@ -155,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             @Override
     public void onStop(){
                 super.onStop();
-                if (my_thread != null) {
+                if (my_thread != null) { //stop the running thread
                         my_thread.stop_running();
                         my_thread.interrupt();
                    }
@@ -179,18 +180,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             case R.id.action_settings:
                 // User chose the "Settings" item, show the app settings UI...
                 Intent i = new Intent(this, SettingsActivity.class);
-                //i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 i.putExtra("EXTRA_PARENT_COMPONENT_NAME", new ComponentName(this, MainActivity.class));
                 startActivity(i);
                 finish();
                 return true;
             case R.id.action_mode:
+                // change to map mode and save mode value in sharedpreferences
                 SharedPreferences sharedPref = getSharedPreferences(getString(R.string.pref_file_key), Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPref.edit();
                 editor.putBoolean(getString(R.string.cameramode), false);
                 editor.commit();
                 Intent j = new Intent(MainActivity.this, MapsActivity.class);
-                //j.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(j);
                 finish();
                 return true;
@@ -293,7 +293,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     LocationListener locationListenerGps = new LocationListener() {  //Listener for GPS location
         public void onLocationChanged(Location location) {
             if (location!=null) {
-                synchronized(App.current_location_flag) {
+                synchronized(App.current_location_flag) { //singleton access to current location
                     App.current_location = location;
                 }
                 arOverlay.invalidate();

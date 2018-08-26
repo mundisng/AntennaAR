@@ -22,6 +22,7 @@ public class WelcomeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //set up the GUI
         setContentView(R.layout.activity_welcome);
         my_toolbar = (Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(my_toolbar);
@@ -32,6 +33,7 @@ public class WelcomeActivity extends AppCompatActivity {
                 public void run() { //run the app
                     SharedPreferences sharedPref = getSharedPreferences(getString(R.string.pref_file_key), Context.MODE_PRIVATE);
                     cameramode_flag = sharedPref.getBoolean(getString(R.string.cameramode), true);
+                    //start the app in given mode based on sharedpreferences saved value
                     if (cameramode_flag) {
                         Intent i = new Intent(WelcomeActivity.this, MainActivity.class);
                         startActivity(i);
@@ -102,6 +104,7 @@ public class WelcomeActivity extends AppCompatActivity {
                             public void run() {
                                 SharedPreferences sharedPref = getSharedPreferences(getString(R.string.pref_file_key), Context.MODE_PRIVATE);
                                 cameramode_flag = sharedPref.getBoolean(getString(R.string.cameramode), true);
+                                //start the app in given mode based on sharedpreferences saved value
                                 if (cameramode_flag) {
                                     Intent i = new Intent(WelcomeActivity.this, MainActivity.class);
                                     startActivity(i);

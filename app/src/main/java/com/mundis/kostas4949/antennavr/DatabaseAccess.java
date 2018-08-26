@@ -19,7 +19,7 @@ public class DatabaseAccess {
         this.openHelper = new DatabaseOpenHelper(context);
     }
 
-    public static DatabaseAccess getInstance(Context context) {
+    public static DatabaseAccess getInstance(Context context) { //singleton access
         if (instance == null) {
             instance = new DatabaseAccess(context);
         }

@@ -21,21 +21,19 @@ public class MainActivityThread extends Thread{
         try {
             while (is_Running) {
                 Location current_location;
-                synchronized (App.current_location_flag) {
+                synchronized (App.current_location_flag) { //singleton access to current location
                     current_location=App.current_location;
                 }
                 if (current_location != null) {
                     ArrayList<ARCoord> arPoints;
-                    if (my_radius > 0 && antenum > 0) {
-                        //arPoints=App.databaseAccess.getAllCellCoords();
+                    if (my_radius > 0 && antenum > 0) { //get antennas from database based on given parameters
                         arPoints = App.databaseAccess.getAntennasWithinRadius(current_location.getLatitude(), current_location.getLongitude(), my_radius, antenum,range);
                     } else if (my_radius > 0 && antenum == 0) {
-                        //arPoints=App.databaseAccess.getAllCellCoords();
                         arPoints = App.databaseAccess.getAntennasWithinRadius(current_location.getLatitude(), current_location.getLongitude(), my_radius,range);
                     } else {
                         arPoints = null;
                     }
-                    synchronized (App.my_antennas_flag) {
+                    synchronized (App.my_antennas_flag) { //synchronized renew of the antenna list
                         App.my_antennas = arPoints;
                     }
                 }
