@@ -12,6 +12,4 @@
     <string name="cameramode">cameramode_flag</string>
     <string name="pref_minTime">Minimum Time</string>
     <string name="pref_minTime_summ">How often would you like to check for location updates? (in millisecs)</string>
-    <string name="pref_range">Antenna Accuracy in meters</string>
-    <string name="pref_range_summ">Antennas position might range within given accuracy radius</string>
 </resources>

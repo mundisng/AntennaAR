@@ -9,9 +9,8 @@ public class MapsActivityThread extends Thread{
     double my_radius;
     int range;
 
-    MapsActivityThread(double my_radius,int range) {
+    MapsActivityThread(double my_radius) {
         this.my_radius=my_radius;
-        this.range=range;
     }
 
     public void run() {
@@ -23,7 +22,7 @@ public class MapsActivityThread extends Thread{
                 }
                 if (current_location != null) {
                     ArrayList<ARCoord> arPoints; // get antennas from database
-                    arPoints= App.databaseAccess.getAntennasWithinRadius(current_location.getLatitude(),current_location.getLongitude(),my_radius,range);
+                    arPoints= App.databaseAccess.getAntennasWithinRadius(current_location.getLatitude(),current_location.getLongitude(),my_radius);
                     synchronized (App.my_antennas_flag) { //synchronized renew of the antenna list
                         App.my_antennas = arPoints;
                     }

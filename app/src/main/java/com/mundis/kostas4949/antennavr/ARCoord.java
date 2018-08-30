@@ -6,15 +6,13 @@ import android.location.Location;
 public class ARCoord { //class used by cell tower points and what data every point holds
     Location location;
     String name;
-    double range;
 
-    public ARCoord(String name, double lat, double lon, double altitude, double range) {
+    public ARCoord(String name, double lat, double lon, double altitude) {
         this.name = name;
         location = new Location("ARPoint");
         location.setLatitude(lat);
         location.setLongitude(lon);
         location.setAltitude(altitude);
-        this.range=range;
     }
 
     public Location getLocation() {
@@ -24,8 +22,6 @@ public class ARCoord { //class used by cell tower points and what data every poi
     public String getName() {
         return name;
     }
-
-    public double getRange() { return range; }
 
 
 }

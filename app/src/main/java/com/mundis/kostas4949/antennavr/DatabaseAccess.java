@@ -37,10 +37,10 @@ public class DatabaseAccess {
 /* NOT USED IN CURRENT IMPLEMENTATION
     public ArrayList<ARCoord> getAllCellCoords(){
         ArrayList<ARCoord> coordlist = new ArrayList<>();
-        Cursor cursor = database.rawQuery("select cell,latitude,longitude,altitude,range from cell_towers_greece limit 7", null);
+        Cursor cursor = database.rawQuery("select cell,latitude,longitude,altitude from cell_towers_greece limit 7", null);
         cursor.moveToFirst();
         while (!cursor.isAfterLast()){
-            coordlist.add(new ARCoord(cursor.getString(0),cursor.getDouble(1),cursor.getDouble(2),cursor.getDouble(3),cursor.getDouble(4)));
+            coordlist.add(new ARCoord(cursor.getString(0),cursor.getDouble(1),cursor.getDouble(2),cursor.getDouble(3)));
             cursor.moveToNext();
         }
         cursor.close();
@@ -90,20 +90,20 @@ public class DatabaseAccess {
     }
     /* NOT USED IN CURRENT IMPLEMENTATION
     //maximum antennas just limit, not ordered
-    public ArrayList<ARCoord> getMaximumAntennas(double x,double y,int antenum,int range){
+    public ArrayList<ARCoord> getMaximumAntennas(double x,double y,int antenum){
         ArrayList<ARCoord> coordlist=new ArrayList<>();
-        String stuff[]={String.valueOf(range),String.valueOf(antenum)};
-        Cursor cursor = database.rawQuery("select cell,latitude,longitude,altitude,range from cell_towers_greece where range<=? limit ?", stuff);
+        String stuff[]={String.valueOf(antenum)};
+        Cursor cursor = database.rawQuery("select cell,latitude,longitude,altitude from cell_towers_greece limit ?", stuff);
         cursor.moveToFirst();
         while (!cursor.isAfterLast()){
-            coordlist.add(new ARCoord(cursor.getString(0),cursor.getDouble(1),cursor.getDouble(2),cursor.getDouble(3),cursor.getDouble(4)));
+            coordlist.add(new ARCoord(cursor.getString(0),cursor.getDouble(1),cursor.getDouble(2),cursor.getDouble(3)));
             cursor.moveToNext();
         }
         cursor.close();
         return coordlist;
     }
 */
-    public ArrayList<ARCoord> getAntennasWithinRadius(double x,double y,double radius,int antenum,int range){ //Make an optimized database search based on range and number of antennas
+    public ArrayList<ARCoord> getAntennasWithinRadius(double x,double y,double radius,int antenum){ //Make an optimized database search based on range and number of antennas
         ArrayList<ARCoord> coordlist=new ArrayList<>();
         final double mult = 1.1;
         LatLng p1 = calculateDerivedPosition(x,y, mult * radius, 0);   //get 4 locations (east,west,north,south) at 1.1*max range
@@ -111,9 +111,9 @@ public class DatabaseAccess {
         LatLng p3 = calculateDerivedPosition(x,y, mult * radius, 180);
         LatLng p4 = calculateDerivedPosition(x,y, mult * radius, 270);
         double fudge = Math.pow(Math.cos(Math.toRadians(x)),2); //get those locations based on current position, default only works at the equator
-        String stuff[]={String.valueOf(range),String.valueOf(p1.latitude),String.valueOf(p3.latitude),String.valueOf(p2.longitude),String.valueOf(p4.longitude),
+        String stuff[]={String.valueOf(p1.latitude),String.valueOf(p3.latitude),String.valueOf(p2.longitude),String.valueOf(p4.longitude),
                 String.valueOf(x),String.valueOf(x),String.valueOf(y),String.valueOf(y),String.valueOf(fudge)}; //use those 4 points to limit the sql request so as to make the database search faster
-        Cursor cursor=database.rawQuery("SELECT cell,latitude,longitude,altitude,range FROM cell_towers_greece WHERE range<=? AND latitude<? AND latitude>? AND longitude<? AND longitude>? ORDER BY ((? - latitude) * (? - latitude) +" +
+        Cursor cursor=database.rawQuery("SELECT cell,latitude,longitude,altitude FROM cell_towers_greece WHERE latitude<? AND latitude>? AND longitude<? AND longitude>? ORDER BY ((? - latitude) * (? - latitude) +" +
                 "(? - longitude) * (? - longitude) * ?)",stuff);
         cursor.moveToFirst();
         int ante_counter=0;
@@ -122,7 +122,7 @@ public class DatabaseAccess {
             double lon0=cursor.getDouble(2);
             if (get_DistanceBetweenTwoPoints(x,y,lat0,lon0)<=radius) {
                 ante_counter++;
-                coordlist.add(new ARCoord(cursor.getString(0), lat0, lon0, cursor.getDouble(3),cursor.getDouble(4)));
+                coordlist.add(new ARCoord(cursor.getString(0), lat0, lon0, cursor.getDouble(3)));
             }
             cursor.moveToNext();
         }
@@ -131,21 +131,21 @@ public class DatabaseAccess {
         return coordlist;
     }
 
-    public ArrayList<ARCoord> getAntennasWithinRadius(double x,double y,double radius,int range){ //Do the same optimized database search without the use of a number of antennas
+    public ArrayList<ARCoord> getAntennasWithinRadius(double x,double y,double radius){ //Do the same optimized database search without the use of a number of antennas
         ArrayList<ARCoord> coordlist=new ArrayList<>();
         final double mult = 1.1;
         LatLng p1 = calculateDerivedPosition(x,y, mult * radius, 0);
         LatLng p2 = calculateDerivedPosition(x,y, mult * radius, 90);
         LatLng p3 = calculateDerivedPosition(x,y, mult * radius, 180);
         LatLng p4 = calculateDerivedPosition(x,y, mult * radius, 270);
-        String stuff[]={String.valueOf(range),String.valueOf(p1.latitude),String.valueOf(p3.latitude),String.valueOf(p2.longitude),String.valueOf(p4.longitude)};
-        Cursor cursor=database.rawQuery("SELECT cell,latitude,longitude,altitude,range FROM cell_towers_greece WHERE range<=? AND latitude<? AND latitude>? AND longitude<? AND longitude>?",stuff);
+        String stuff[]={String.valueOf(p1.latitude),String.valueOf(p3.latitude),String.valueOf(p2.longitude),String.valueOf(p4.longitude)};
+        Cursor cursor=database.rawQuery("SELECT cell,latitude,longitude,altitude FROM cell_towers_greece WHERE latitude<? AND latitude>? AND longitude<? AND longitude>?",stuff);
         cursor.moveToFirst();
         while (!cursor.isAfterLast()){
             double lat0=cursor.getDouble(1);
             double lon0=cursor.getDouble(2);
             if (get_DistanceBetweenTwoPoints(x,y,lat0,lon0)<=radius) {
-                coordlist.add(new ARCoord(cursor.getString(0), lat0, lon0, cursor.getDouble(3),cursor.getDouble(4)));
+                coordlist.add(new ARCoord(cursor.getString(0), lat0, lon0, cursor.getDouble(3)));
             }
                 cursor.moveToNext();
         }

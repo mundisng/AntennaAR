@@ -18,10 +18,4 @@
         android:summary="@string/pref_minTime_summ"
         android:inputType="number"
         android:defaultValue="50" />
-    <EditTextPreference
-        android:key="pref_range"
-        android:title="@string/pref_range"
-        android:summary="@string/pref_range_summ"
-        android:inputType="number"
-        android:defaultValue="200" />
 </PreferenceScreen>

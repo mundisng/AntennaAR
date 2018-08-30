@@ -60,7 +60,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     ArrayList<ARCoord> my_antennas;
     private double my_radius;
     private long my_minTime;
-    private int my_range;
     private Circle my_last_circle;
     private MapsActivityThread my_thread;
     private LatLng highlighted_latlng;
@@ -74,13 +73,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         SharedPreferences my_sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         String radiusstr = my_sharedPref.getString("pref_radius", "100");
         String minTimestr = my_sharedPref.getString("pref_minTime", "50");
-        String rangestr= my_sharedPref.getString("pref_range","200");
         my_minTime=Long.parseLong(minTimestr);
         my_radius=Double.parseDouble(radiusstr);
-        my_range=Integer.parseInt(rangestr);
-        if(my_range==0){
-            my_range=1;
-        }
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         gps_enabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         if (!gps_enabled) {
@@ -114,7 +108,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onStart(){
         super.onStart();
-        my_thread=new MapsActivityThread(my_radius,my_range); //set up thread to make GUI more responsive
+        my_thread=new MapsActivityThread(my_radius); //set up thread to make GUI more responsive
         if(my_thread!=null){
             my_thread.start();
         }

@@ -11,10 +11,9 @@ public class MainActivityThread extends Thread{
     int antenum;
     int range;
 
-    MainActivityThread(double my_radius,int antenum,int range) {
+    MainActivityThread(double my_radius,int antenum) {
         this.my_radius=my_radius;
         this.antenum=antenum;
-        this.range=range;
     }
 
     public void run() {
@@ -27,9 +26,9 @@ public class MainActivityThread extends Thread{
                 if (current_location != null) {
                     ArrayList<ARCoord> arPoints;
                     if (my_radius > 0 && antenum > 0) { //get antennas from database based on given parameters
-                        arPoints = App.databaseAccess.getAntennasWithinRadius(current_location.getLatitude(), current_location.getLongitude(), my_radius, antenum,range);
+                        arPoints = App.databaseAccess.getAntennasWithinRadius(current_location.getLatitude(), current_location.getLongitude(), my_radius, antenum);
                     } else if (my_radius > 0 && antenum == 0) {
-                        arPoints = App.databaseAccess.getAntennasWithinRadius(current_location.getLatitude(), current_location.getLongitude(), my_radius,range);
+                        arPoints = App.databaseAccess.getAntennasWithinRadius(current_location.getLatitude(), current_location.getLongitude(), my_radius);
                     } else {
                         arPoints = null;
                     }
