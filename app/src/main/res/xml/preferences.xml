@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <EditTextPreference
+        android:key="pref_antenum"
+        android:title="@string/pref_antenum"
+        android:summary="@string/pref_antenum_summ"
+        android:inputType="number"
+        android:defaultValue="5" />
+    <EditTextPreference
+        android:key="pref_radius"
+        android:title="@string/pref_radius"
+        android:summary="@string/pref_radius_summ"
+        android:inputType="number"
+        android:defaultValue="100" />
+    <EditTextPreference
+        android:key="pref_minTime"
+        android:title="@string/pref_minTime"
+        android:summary="@string/pref_minTime_summ"
+        android:inputType="number"
+        android:defaultValue="50" />
+</PreferenceScreen>
