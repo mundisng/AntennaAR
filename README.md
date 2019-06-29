@@ -1,4 +1,0 @@
-# spicy-guacamole
-
-
-testerino
